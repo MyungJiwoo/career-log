@@ -22,7 +22,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3000/api/appliedJob/691204e468e155c3b7d5b87f
+GET http://localhost:3000/api/appliedJob/1
 Content-Type: application/json
 
 ###

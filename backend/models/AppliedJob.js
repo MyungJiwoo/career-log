@@ -5,6 +5,7 @@ const appliedJobSchema = new mongoose.Schema(
     number: {
       type: Number,
       require: true,
+      unique: true,
     },
     companyName: {
       type: String,

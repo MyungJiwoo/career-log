@@ -39,9 +39,10 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:number", async (req, res) => {
   try {
-    const job = await AppliedJob.findById(req.params.id);
+    const number = Number(req.params.number);
+    const job = await AppliedJob.findOne({ number: number });
 
     if (!job) {
       return res.status(404).json({ message: "지원 현황을 찾을 수 없습니다." });
