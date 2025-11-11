@@ -20,6 +20,13 @@ import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 
+import { useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/mantine";
+import "@blocknote/core/fonts/inter.css";
+import "@blocknote/mantine/style.css";
+
+import axios from "axios";
+
 interface Stage {
   order: number;
   name: string;
@@ -27,6 +34,8 @@ interface Stage {
 }
 
 const CreatePage = () => {
+  const editor = useCreateBlockNote();
+
   const [companyName, setCompanyName] = useState<string>("");
   const [position, setPosition] = useState<string>("");
   const [contents, setContents] = useState<string>("");
@@ -81,19 +90,52 @@ const CreatePage = () => {
     );
   };
 
-  const handleSubmit = () => {
-    console.log({
+  const onChange = () => {
+    // 기본으로 제공되는 마크다운 변환 문법은 blocknote의 모든 기능을 지원하지 않아서 JSON으로 직렬화하여 저장
+    const markdown = JSON.stringify(editor.document);
+    setContents(markdown);
+  };
+
+  const handleSubmit = async () => {
+    const parsedDate = date
+      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(date.getDate()).padStart(2, "0")}`
+      : "";
+
+    const payload = {
       companyName,
       position,
-      date,
-      progressStatus,
+      appliedDate: parsedDate,
       stages,
       contents,
-    });
+      progress: progressStatus,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/appliedJob",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
+        }
+      );
+
+      console.log("✅ 저장 성공:", response.data);
+      alert("지원 내역이 성공적으로 저장되었습니다!");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("❌ 저장 실패:", error.response?.data || error.message);
+      alert("저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+    }
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-120 flex-1">
+    <div className="flex flex-col gap-6 flex-1">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-black-900">진행 일정 추가</h1>
         <button
@@ -237,13 +279,7 @@ const CreatePage = () => {
 
             <Field>
               <FieldLabel htmlFor="contents">기타 내용</FieldLabel>
-              <Input
-                id="contents"
-                type="text"
-                value={contents}
-                onChange={(event) => setContents(event.target.value)}
-                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
-              />
+              <BlockNoteView editor={editor} onChange={onChange} />
             </Field>
           </FieldGroup>
         </FieldSet>
