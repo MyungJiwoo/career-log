@@ -1,4 +1,15 @@
+import { useNavigate } from "react-router-dom";
+
 const MainPage = () => {
+  const navigate = useNavigate();
+  const navigateToCreate = () => {
+    navigate("/new");
+  };
+
+  const navigateToDetail = () => {
+    navigate(`/100`);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-bold text-black-900">지원 현황 리포트</h1>
@@ -50,7 +61,10 @@ const MainPage = () => {
             진행 종료
           </button>
         </div>
-        <button className="text-sm bg-black-800 text-white-200 w-fit py-1.5 px-3 rounded-xl cursor-pointer ml-auto">
+        <button
+          onClick={navigateToCreate}
+          className="text-sm bg-black-800 text-white-200 w-fit py-1.5 px-3 rounded-xl cursor-pointer ml-auto"
+        >
           추가하기
         </button>
       </div>
@@ -78,7 +92,7 @@ const MainPage = () => {
         </thead>
 
         <tbody className="text-black-900">
-          <tr className="">
+          <tr onClick={navigateToDetail} className="cursor-pointer">
             <td>1</td>
             <td>기업 이름</td>
             <td>인턴</td>
@@ -106,7 +120,7 @@ const MainPage = () => {
               </div>
             </td>
           </tr>
-          <tr className="">
+          <tr onClick={navigateToDetail} className="cursor-pointer">
             <td>2</td>
             <td>기업 이름</td>
             <td>인턴</td>
