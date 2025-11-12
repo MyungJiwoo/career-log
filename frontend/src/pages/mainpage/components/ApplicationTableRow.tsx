@@ -1,3 +1,4 @@
+import StageTag from "@/components/StageTag";
 import { useNavigate } from "react-router-dom";
 
 interface Stage {
@@ -36,9 +37,7 @@ export default function ApplicationTableRow({
       <td>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent">
           {stages.map((stage) => (
-            <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-              {stage.name}
-            </p>
+            <StageTag name={stage.name} size="sm" status={stage.status} />
           ))}
         </div>
       </td>

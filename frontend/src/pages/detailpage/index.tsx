@@ -1,4 +1,5 @@
 import Button from "@/components/Button";
+import StageTag from "@/components/StageTag";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import axios from "axios";
@@ -96,9 +97,7 @@ const DetailPage = () => {
             <p className="text-sm text-white-700">채용 절차</p>
             <div className="flex gap-2">
               {job?.stages.map((stage) => (
-                <p className="w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  {stage.name}
-                </p>
+                <StageTag name={stage.name} size="md" status={stage.status} />
               ))}
             </div>
           </div>
