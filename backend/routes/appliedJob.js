@@ -55,9 +55,17 @@ router.get("/:number", async (req, res) => {
   }
 });
 
-// todo: 수정하기
-router.patch("/:id", async (req, res) => {
+router.patch("/:number", async (req, res) => {
   try {
+    const number = Number(req.params.number);
+    const job = await AppliedJob.findOne({ number: number });
+
+    if (!job)
+      return res.status(404).send({ message: "지원 현황을 찾을 수 없습니다." });
+
+    Object.assign(job, req.body);
+    await job.save();
+    res.json(job);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
