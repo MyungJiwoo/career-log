@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { ChevronDownIcon } from "lucide-react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -28,6 +28,7 @@ import "@blocknote/mantine/style.css";
 import axios from "axios";
 import PlusIcon from "@/components/icons/PlusIcon";
 import MinusIcon from "@/components/icons/MinusIcon";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Stage {
   order: number;
@@ -36,6 +37,9 @@ interface Stage {
 }
 
 const CreatePage = () => {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
   const editor = useCreateBlockNote();
 
   const [companyName, setCompanyName] = useState<string>("");
@@ -116,25 +120,68 @@ const CreatePage = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/appliedJob",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
-        }
-      );
+      let response;
+      if (id) {
+        response = await axios.patch(
+          `http://localhost:3000/api/appliedJob/${id}`,
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
+          }
+        );
+      } else {
+        response = await axios.post(
+          "http://localhost:3000/api/appliedJob",
+          payload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
+          }
+        );
+      }
 
-      console.log("✅ 저장 성공:", response.data);
+      console.log("저장 성공:", response.data);
       alert("지원 내역이 성공적으로 저장되었습니다!");
+      if (id) {
+        navigate(`/${id}`);
+      } else {
+        navigate("/");
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("❌ 저장 실패:", error.response?.data || error.message);
-      alert("저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+      console.error("저장 실패:", error.response?.data || error.message);
+      alert("저장 중 오류가 발생했습니다.");
     }
   };
+
+  const fetchDetails = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/appliedJob/${id}`
+      );
+      setCompanyName(response.data.companyName);
+      setPosition(response.data.position);
+      setDate(new Date(response.data.appliedDate));
+      setStages(response.data.stages);
+      setProgressStatus(response.data.progress);
+      const parsedBlocks = JSON.parse(response.data.contents);
+      editor.replaceBlocks(editor.document, parsedBlocks);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("불러오기 실패:", error.response?.data || error.message);
+      alert("불러오기 중 오류가 발생했습니다.");
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchDetails();
+  }, [id]);
 
   return (
     <div className="flex flex-col gap-6 flex-1">

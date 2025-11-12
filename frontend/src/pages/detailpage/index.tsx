@@ -3,7 +3,7 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Stage {
   order: number;
@@ -24,9 +24,14 @@ interface AppliedJob {
 }
 
 const DetailPage = () => {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<AppliedJob | undefined>();
   const editor = useCreateBlockNote();
+
+  const navigateToEdit = (number: number) => {
+    navigate(`/new/${number}`);
+  };
 
   const fetchDetails = async () => {
     try {
@@ -65,7 +70,7 @@ const DetailPage = () => {
             {job?.companyName}
           </h1>
           <Button
-            onClick={() => {}}
+            onClick={() => navigateToEdit(Number(id))}
             variant="ghost"
             size="md"
             className="py-2 px-3 min-h-fit"
