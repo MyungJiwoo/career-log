@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
 import ApplicationTableRow from "./components/ApplicationTableRow";
+import Button from "@/components/Button";
 
 interface Stage {
   order: number;
@@ -82,19 +83,29 @@ const MainPage = () => {
       {/* 지원 현황 추가 버튼 */}
       <div className="flex justify-between">
         <div className="flex gap-2 justify-start">
-          <button className="text-sm bg-black-600 text-white-200 w-fit py-1.5 px-3 rounded-xl cursor-pointer">
+          <Button
+            onClick={() => {}}
+            size="sm"
+            className="px-3"
+            variant="secondary"
+          >
+            진행 예정
+          </Button>
+          <Button onClick={() => {}} size="sm" className="px-3 bg-black-600">
             진행 중
-          </button>
-          <button className="text-sm bg-white-300 text-black-800 w-fit py-1.5 px-3 rounded-xl cursor-pointer">
+          </Button>
+          <Button
+            onClick={() => {}}
+            size="sm"
+            className="px-3"
+            variant="secondary"
+          >
             진행 종료
-          </button>
+          </Button>
         </div>
-        <button
-          onClick={navigateToCreate}
-          className="text-sm bg-black-800 text-white-200 w-fit py-1.5 px-3 rounded-xl cursor-pointer ml-auto"
-        >
+        <Button onClick={navigateToCreate} size="sm" className="px-3">
           추가하기
-        </button>
+        </Button>
       </div>
 
       {/* 지원 현황 표 */}

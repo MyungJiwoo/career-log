@@ -1,3 +1,4 @@
+import Button from "@/components/Button";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import axios from "axios";
@@ -63,9 +64,14 @@ const DetailPage = () => {
           <h1 className="text-3xl font-bold text-black-900">
             {job?.companyName}
           </h1>
-          <button className="bg-white-100 text-white-700 w-fit py-1.5 px-3 rounded-xl cursor-pointer hover:bg-white-300">
+          <Button
+            onClick={() => {}}
+            variant="ghost"
+            size="md"
+            className="py-2 px-3 min-h-fit"
+          >
             편집
-          </button>
+          </Button>
         </div>
 
         <div className="flex flex-col gap-6">

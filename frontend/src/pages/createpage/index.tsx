@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+import { Button as ShadcnButton } from "@/components/ui/button";
+import Button from "@/components/Button";
 import { Calendar } from "@/components/ui/calendar";
 import { FieldSet, FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,6 @@ import {
 import { ChevronDownIcon } from "lucide-react";
 
 import { useState } from "react";
-import { twMerge } from "tailwind-merge";
 
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -26,6 +26,8 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 
 import axios from "axios";
+import PlusIcon from "@/components/icons/PlusIcon";
+import MinusIcon from "@/components/icons/MinusIcon";
 
 interface Stage {
   order: number;
@@ -138,12 +140,9 @@ const CreatePage = () => {
     <div className="flex flex-col gap-6 flex-1">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-black-900">진행 일정 추가</h1>
-        <button
-          onClick={handleSubmit}
-          className="bg-black-800 text-white-200 w-fit py-1.5 px-3 rounded-xl cursor-pointer ml-auto"
-        >
-          저장
-        </button>
+        <Button onClick={handleSubmit} size="md">
+          저장하기
+        </Button>
       </div>
 
       <form className="bg-white-100 rounded-2xl w-full p-5 gap-4 flex flex-col">
@@ -175,14 +174,14 @@ const CreatePage = () => {
               <FieldLabel htmlFor="position">지원한 날짜</FieldLabel>
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                  <Button
+                  <ShadcnButton
                     variant="outline"
                     id="date"
                     className="justify-between border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal cursor-pointer"
                   >
                     {date ? date.toLocaleDateString() : "Select date"}
                     <ChevronDownIcon />
-                  </Button>
+                  </ShadcnButton>
                 </PopoverTrigger>
                 <PopoverContent
                   className="w-auto overflow-hidden p-0"
@@ -218,7 +217,7 @@ const CreatePage = () => {
             <Field>
               <FieldLabel htmlFor="stages">채용 절차</FieldLabel>
               {stages?.map((stage, index) => (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Input
                     type="text"
                     className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
@@ -258,21 +257,26 @@ const CreatePage = () => {
                       불합격
                     </ToggleGroupItem>
                   </ToggleGroup>
-                  <button
-                    onClick={(event) =>
-                      stages.length - 1 !== index
-                        ? handleDeleteStage(event, stage.order)
-                        : handleAddStage(event)
-                    }
-                    className={twMerge(
-                      "shrink-0 text-white-200 rounded-full size-8 flex justify-center items-center cursor-pointer",
-                      stages.length - 1 !== index
-                        ? "bg-white-700 hover:bg-black-600"
-                        : "bg-black-600 hover:bg-black-800"
-                    )}
-                  >
-                    {stages.length - 1 !== index ? "-" : "+"}
-                  </button>
+
+                  {stages.length - 1 !== index ? (
+                    <Button
+                      onClick={(event) => handleDeleteStage(event, stage.order)}
+                      variant="secondary"
+                      size="sm"
+                      round="circular"
+                      className="size-8"
+                      rightIcon={<MinusIcon className="text-gray-400 size-5" />}
+                    ></Button>
+                  ) : (
+                    <Button
+                      onClick={(event) => handleAddStage(event)}
+                      variant="primary"
+                      size="sm"
+                      round="circular"
+                      className="size-8"
+                      rightIcon={<PlusIcon className="text-white-200 size-5" />}
+                    ></Button>
+                  )}
                 </div>
               ))}
             </Field>
