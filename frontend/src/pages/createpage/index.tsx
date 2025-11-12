@@ -24,11 +24,59 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
+import {
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  createCodeBlockSpec,
+} from "@blocknote/core";
 
 import axios from "axios";
 import PlusIcon from "@/components/icons/PlusIcon";
 import MinusIcon from "@/components/icons/MinusIcon";
 import { useNavigate, useParams } from "react-router-dom";
+
+const createSchema = () => {
+  const blockSpecs = {
+    ...defaultBlockSpecs,
+
+    // 숫자 목록 start 기본값
+    numberedListItem: {
+      ...defaultBlockSpecs.numberedListItem,
+      config: {
+        ...defaultBlockSpecs.numberedListItem.config,
+        propSchema: {
+          ...defaultBlockSpecs.numberedListItem.config.propSchema,
+          start: {
+            ...defaultBlockSpecs.numberedListItem.config.propSchema.start,
+            default: 1 as const,
+          },
+        },
+      },
+    },
+
+    // 이미지 previewWidth/previewHeight 기본값
+    image: {
+      ...defaultBlockSpecs.image,
+      config: {
+        ...defaultBlockSpecs.image.config,
+        propSchema: {
+          ...defaultBlockSpecs.image.config.propSchema,
+          previewWidth: {
+            ...defaultBlockSpecs.image.config.propSchema.previewWidth,
+            // 누락 시 RangeError 방지용 안전 기본값
+            default: 512 as const,
+          },
+        },
+      },
+    },
+
+    codeBlock: createCodeBlockSpec({
+      /* your existing options */
+    }),
+  };
+
+  return BlockNoteSchema.create({ blockSpecs });
+};
 
 interface Stage {
   order: number;
@@ -40,7 +88,7 @@ const CreatePage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
-  const editor = useCreateBlockNote();
+  const editor = useCreateBlockNote({ schema: createSchema() });
 
   const [companyName, setCompanyName] = useState<string>("");
   const [position, setPosition] = useState<string>("");
