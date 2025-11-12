@@ -37,6 +37,15 @@ Content-Type: application/json
 
 ###
 
+PATCH http://localhost:3000/api/appliedJob/5/stages/691416d711a7c3b797a45175
+Content-Type: application/json
+
+{
+  "status": "pass"
+}
+
+###
+
 GET http://localhost:3000/api/appliedJob
 Content-Type: application/json
 

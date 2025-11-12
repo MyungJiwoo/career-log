@@ -72,6 +72,38 @@ router.patch("/:number", async (req, res) => {
   }
 });
 
+// 전형 하나만 상태 변경
+router.patch("/:jobId/stages/:stageId", async (req, res) => {
+  try {
+    const { jobId, stageId } = req.params;
+    const { status } = req.body;
+
+    const allowed = ["pending", "pass", "nonpass"];
+    if (!allowed.includes(status)) {
+      return res
+        .status(400)
+        .json({ message: "유효하지 않은 status 값입니다." });
+    }
+
+    const filter = { number: Number(jobId), "stages._id": stageId };
+    const update = { $set: { "stages.$.status": status } };
+    const options = {
+      new: true,
+      runValidators: true,
+    };
+
+    const updated = await AppliedJob.findOneAndUpdate(filter, update, options);
+    if (!updated) {
+      return res.status(404).json({ message: "해당 전형을 찾을 수 없습니다." });
+    }
+
+    return res.json(updated);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
 router.delete("/:id", async (req, res) => {
   try {
     const job = await AppliedJob.findById(req.params.id);
