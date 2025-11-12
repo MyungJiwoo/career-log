@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
 
 interface Stage {
   order: number;
@@ -53,39 +54,32 @@ const MainPage = () => {
 
       {/* 지원 현황 통계 위젯 */}
       <div className="flex justify-between">
-        <div className="w-36 h-36 rounded-2xl bg-white-100 flex flex-col justify-center items-center gap-2">
-          <h4 className="text-sm text-black-900">총 지원 횟수</h4>
-          <h3 className="text-black-900 font-bold text-3xl">70번</h3>
-        </div>
-
-        <div className="w-36 h-36 rounded-2xl bg-white-100 flex flex-col justify-center items-center gap-2">
-          <h4 className="text-sm text-black-900">총 합격률</h4>
-          <h3 className="text-black-900 font-bold text-3xl">70%</h3>
-        </div>
-
-        <div className="w-36 h-36 rounded-2xl bg-white-100 flex flex-col justify-center items-center gap-2">
-          <h4 className="text-sm text-black-900">서류 합격률</h4>
-          <h3 className="text-black-900 font-bold text-3xl">70%</h3>
-          <p className="text-sm text-white-700">총 30회 지원</p>
-        </div>
-
-        <div className="w-36 h-36 rounded-2xl bg-white-100 flex flex-col justify-center items-center gap-2">
-          <h4 className="text-sm text-black-900">코딩 테스트 합격률</h4>
-          <h3 className="text-black-900 font-bold text-3xl">70%</h3>
-          <p className="text-sm text-white-700">총 30회 진행</p>
-        </div>
-
-        <div className="w-36 h-36 rounded-2xl bg-white-100 flex flex-col justify-center items-center gap-2">
-          <h4 className="text-sm text-black-900">과제 테스트 합격률</h4>
-          <h3 className="text-black-900 font-bold text-3xl">70%</h3>
-          <p className="text-sm text-white-700">총 30회 진행</p>
-        </div>
-
-        <div className="w-36 h-36 rounded-2xl bg-white-100 flex flex-col justify-center items-center gap-2">
-          <h4 className="text-sm text-black-900">면접 합격률</h4>
-          <h3 className="text-black-900 font-bold text-3xl">70%</h3>
-          <p className="text-sm text-white-700">총 30회 진행</p>
-        </div>
+        <ApplicationStatusWidget title="총 지원 횟수" stats="70개" />
+        <ApplicationStatusWidget title="총 합격률" stats="70%" />
+        <ApplicationStatusWidget
+          title="서류 합격률"
+          stats="30%"
+          total={100}
+          totalUnit="지원"
+        />
+        <ApplicationStatusWidget
+          title="코딩 테스트 합격률"
+          stats="30%"
+          total={100}
+          totalUnit="진행"
+        />
+        <ApplicationStatusWidget
+          title="과제 테스트 합격률"
+          stats="30%"
+          total={100}
+          totalUnit="진행"
+        />
+        <ApplicationStatusWidget
+          title="면접 합격률"
+          stats="30%"
+          total={100}
+          totalUnit="진행"
+        />
       </div>
 
       {/* 지원 현황 추가 버튼 */}
