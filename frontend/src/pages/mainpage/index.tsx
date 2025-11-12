@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
+import ApplicationTableRow from "./components/ApplicationTableRow";
 
 interface Stage {
   order: number;
@@ -25,10 +26,6 @@ const MainPage = () => {
   const navigate = useNavigate();
   const navigateToCreate = () => {
     navigate("/new");
-  };
-
-  const navigateToDetail = (number: number) => {
-    navigate(`/${number}`);
   };
 
   const [jobs, setJobs] = useState<AppliedJob[] | undefined>();
@@ -123,54 +120,14 @@ const MainPage = () => {
         </thead>
 
         <tbody className="text-black-900">
-          {/* <tr onClick={navigateToDetail} className="cursor-pointer">
-            <td>1</td>
-            <td>기업 이름</td>
-            <td>인턴</td>
-            <td>2025.11.11</td>
-            <td>
-              <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent">
-                <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  서류
-                </p>
-                <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  인적성 검사
-                </p>
-                <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  코딩 테스트
-                </p>
-                <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  과제 테스트
-                </p>
-                <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  1차 면접
-                </p>
-                <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                  2차 면접
-                </p>
-              </div>
-            </td>
-          </tr> */}
-
           {jobs?.map((job) => (
-            <tr
-              onClick={() => navigateToDetail(job.number)}
-              className="cursor-pointer"
-            >
-              <td>{job.number}</td>
-              <td>{job.companyName}</td>
-              <td>{job.position}</td>
-              <td>{job.appliedDate.slice(0, 10)}</td>
-              <td>
-                <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent">
-                  {job.stages.map((stage) => (
-                    <p className="text-sm w-fit py-1 px-3 rounded-2xl bg-black-200 text-black-600 whitespace-nowrap">
-                      {stage.name}
-                    </p>
-                  ))}
-                </div>
-              </td>
-            </tr>
+            <ApplicationTableRow
+              number={job.number}
+              companyName={job.companyName}
+              position={job.position}
+              appliedDate={job.appliedDate}
+              stages={job.stages}
+            />
           ))}
         </tbody>
       </table>
