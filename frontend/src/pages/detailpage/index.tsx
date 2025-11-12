@@ -10,6 +10,7 @@ interface Stage {
   order: number;
   name: string;
   status: "pending" | "pass" | "nonpass";
+  _id: string;
 }
 
 interface AppliedJob {
@@ -97,7 +98,13 @@ const DetailPage = () => {
             <p className="text-sm text-white-700">채용 절차</p>
             <div className="flex gap-2">
               {job?.stages.map((stage) => (
-                <StageTag name={stage.name} size="md" status={stage.status} />
+                <StageTag
+                  name={stage.name}
+                  size="md"
+                  status={stage.status}
+                  jobId={id}
+                  stageId={stage._id}
+                />
               ))}
             </div>
           </div>

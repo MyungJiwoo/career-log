@@ -1,4 +1,12 @@
 import { twJoin } from "tailwind-merge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useState } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import axios from "axios";
 
 const VARIANT_STYLES = {
   size: {
@@ -12,21 +20,100 @@ const VARIANT_STYLES = {
   },
 };
 
+const STATUSES = ["pending", "pass", "nonpass"] as const;
+type Status = (typeof STATUSES)[number];
+const isStatus = (v: unknown): v is Status =>
+  typeof v === "string" && (STATUSES as readonly string[]).includes(v);
+
 interface StageTagProps {
   name: string;
-  status?: "pending" | "pass" | "nonpass";
+  status?: Status;
   size?: "md" | "sm";
+  jobId?: string;
+  stageId?: string;
 }
 
 export default function StageTag({
   name,
   status = "pending",
   size = "md",
+  jobId,
+  stageId,
 }: StageTagProps) {
+  const [open, setOpen] = useState(false);
+  const [stageStatus, setStageStatus] = useState(status);
+
+  const handleChange = (value: string) => {
+    if (isStatus(value)) {
+      setStageStatus(value);
+      handleStatusUpdate(value);
+    }
+  };
+
   const tagClassNames = twJoin(
-    "w-fit py-1 px-3 whitespace-nowrap rounded-2xl",
+    "w-fit py-1 px-3 whitespace-nowrap rounded-2xl cursor-pointer",
     size && VARIANT_STYLES.size[size],
-    status && VARIANT_STYLES.status[status]
+    status && VARIANT_STYLES.status[stageStatus]
   );
-  return <p className={tagClassNames}>{name}</p>;
+
+  const handleStatusUpdate = async (status: string) => {
+    try {
+      await axios.patch(
+        `http://localhost:3000/api/appliedJob/${jobId}/stages/${stageId}`,
+        { status: status },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
+        }
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("수정 실패:", error.response?.data || error.message);
+      alert("수정 중 오류가 발생했습니다.");
+    }
+  };
+
+  return (
+    <div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <p className={tagClassNames}>{name}</p>
+        </PopoverTrigger>
+        <PopoverContent
+          className="w-auto overflow-hidden p-4 flex flex-col gap-2"
+          align="start"
+        >
+          <p className="text-sm text-white-700">전형 결과</p>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            value={stageStatus}
+            onValueChange={handleChange}
+          >
+            <ToggleGroupItem
+              className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+              value="pending"
+            >
+              진행 전
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+              value="pass"
+            >
+              합격
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="nonpass"
+              className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+            >
+              불합격
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 }

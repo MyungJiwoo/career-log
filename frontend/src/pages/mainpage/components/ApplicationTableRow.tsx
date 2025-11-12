@@ -5,6 +5,7 @@ interface Stage {
   order: number;
   name: string;
   status: "pending" | "pass" | "nonpass";
+  _id: string;
 }
 
 interface ApplicationTableRowProps {
@@ -29,15 +30,26 @@ export default function ApplicationTableRow({
   };
 
   return (
-    <tr onClick={() => navigateToDetail(number)} className="cursor-pointer">
+    <tr>
       <td>{number}</td>
-      <td>{companyName}</td>
+      <td
+        onClick={() => navigateToDetail(number)}
+        className="underline cursor-pointer underline-offset-4"
+      >
+        {companyName}
+      </td>
       <td>{position}</td>
       <td>{appliedDate.slice(0, 10)}</td>
       <td>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent">
           {stages.map((stage) => (
-            <StageTag name={stage.name} size="sm" status={stage.status} />
+            <StageTag
+              name={stage.name}
+              size="sm"
+              status={stage.status}
+              stageId={stage._id}
+              jobId={String(number)}
+            />
           ))}
         </div>
       </td>
