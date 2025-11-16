@@ -15,6 +15,7 @@ interface ApplicationTableRowProps {
   appliedDate: string;
   stages: Stage[];
   progress?: "pending" | "in progress" | "completed";
+  id: string;
 }
 
 export default function ApplicationTableRow({
@@ -23,17 +24,18 @@ export default function ApplicationTableRow({
   position,
   appliedDate,
   stages,
+  id,
 }: ApplicationTableRowProps) {
   const navigate = useNavigate();
-  const navigateToDetail = (number: number) => {
-    navigate(`/${number}`);
+  const navigateToDetail = (id: string) => {
+    navigate(`/${id}`);
   };
 
   return (
     <tr>
       <td>{number}</td>
       <td
-        onClick={() => navigateToDetail(number)}
+        onClick={() => navigateToDetail(id)}
         className="underline cursor-pointer underline-offset-4"
       >
         {companyName}
@@ -48,7 +50,7 @@ export default function ApplicationTableRow({
               size="sm"
               status={stage.status}
               stageId={stage._id}
-              jobId={String(number)}
+              jobId={id}
             />
           ))}
         </div>

@@ -9,6 +9,7 @@ interface Stage {
   order: number;
   name: string;
   status: "pending" | "pass" | "nonpass";
+  _id: string;
 }
 
 interface AppliedJob {
@@ -21,6 +22,7 @@ interface AppliedJob {
   progress: "pending" | "in progress" | "completed";
   createdAt: string;
   updatedAt: string;
+  _id: string;
 }
 
 const MainPage = () => {
@@ -133,6 +135,7 @@ const MainPage = () => {
         <tbody className="text-black-900">
           {jobs?.map((job) => (
             <ApplicationTableRow
+              id={job._id}
               number={job.number}
               companyName={job.companyName}
               position={job.position}

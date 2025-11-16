@@ -39,10 +39,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:number", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const number = Number(req.params.number);
-    const job = await AppliedJob.findOne({ number: number });
+    const job = await AppliedJob.findById(req.params.id);
 
     if (!job) {
       return res.status(404).json({ message: "지원 현황을 찾을 수 없습니다." });
@@ -55,10 +54,10 @@ router.get("/:number", async (req, res) => {
   }
 });
 
-router.patch("/:number", async (req, res) => {
+router.patch("/:id", async (req, res) => {
   try {
-    const number = Number(req.params.number);
-    const job = await AppliedJob.findOne({ number: number });
+    // const number = Number(req.params.number);
+    const job = await AppliedJob.findById(req.params.id);
 
     if (!job)
       return res.status(404).send({ message: "지원 현황을 찾을 수 없습니다." });
@@ -85,7 +84,7 @@ router.patch("/:jobId/stages/:stageId", async (req, res) => {
         .json({ message: "유효하지 않은 status 값입니다." });
     }
 
-    const filter = { number: Number(jobId), "stages._id": stageId };
+    const filter = { _id: jobId, "stages._id": stageId };
     const update = { $set: { "stages.$.status": status } };
     const options = {
       new: true,

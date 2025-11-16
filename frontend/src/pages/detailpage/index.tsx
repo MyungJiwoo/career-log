@@ -23,6 +23,7 @@ interface AppliedJob {
   progress: "pending" | "in progress" | "completed";
   createdAt: string;
   updatedAt: string;
+  id: string;
 }
 
 const DetailPage = () => {
@@ -31,8 +32,8 @@ const DetailPage = () => {
   const [job, setJob] = useState<AppliedJob | undefined>();
   const editor = useCreateBlockNote();
 
-  const navigateToEdit = (number: number) => {
-    navigate(`/new/${number}`);
+  const navigateToEdit = (id: string) => {
+    navigate(`/new/${id}`);
   };
 
   const fetchDetails = async () => {
@@ -72,7 +73,9 @@ const DetailPage = () => {
             {job?.companyName}
           </h1>
           <Button
-            onClick={() => navigateToEdit(Number(id))}
+            onClick={() => {
+              if (id) navigateToEdit(id);
+            }}
             variant="ghost"
             size="md"
             className="py-2 px-3 min-h-fit"
