@@ -31,8 +31,14 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const jobs = await AppliedJob.find().sort({ createdAt: -1 });
-    res.json(jobs);
+    const { progress } = req.query ?? "all";
+
+    if (progress === "all") {
+      const allJobs = await AppliedJob.find().sort({ createdAt: -1 });
+      return res.json(allJobs);
+    }
+    const jobs = await AppliedJob.find({ progress }).sort({ createdAt: -1 });
+    return res.json(jobs);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
