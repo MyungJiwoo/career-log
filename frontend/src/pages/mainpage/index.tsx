@@ -26,6 +26,19 @@ interface AppliedJob {
   _id: string;
 }
 
+interface Statistics {
+  totalApplications: number;
+  totalPassRate: number;
+  totalDocumentApplications: number;
+  documentPassRate: number;
+  totalCodingTestAttempts: number;
+  codingTestPassRate: number;
+  totalAssignmentAttempts: number;
+  assignmentPassRate: number;
+  totalInterviewAttempts: number;
+  interviewPassRate: number;
+}
+
 const MainPage = () => {
   const navigate = useNavigate();
   const navigateToCreate = () => {
@@ -33,6 +46,7 @@ const MainPage = () => {
   };
 
   const [jobs, setJobs] = useState<AppliedJob[] | undefined>();
+  const [statistics, setStatistics] = useState<Statistics | undefined>();
   const [progress, setProgress] = useState<
     "in progress" | "pending" | "completed" | "all"
   >("all");
@@ -52,9 +66,29 @@ const MainPage = () => {
     }
   };
 
+  const fetchAppliedStatistics = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:3000/api/appliedJob/statistics"
+      );
+      setStatistics(response.data);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(
+        "통계 불러오기 실패:",
+        error.response?.data || error.message
+      );
+      alert("통계 불러오기 중 오류가 발생했습니다.");
+    }
+  };
+
   useEffect(() => {
     fetchAppliedJobs();
   }, [progress]);
+
+  useEffect(() => {
+    fetchAppliedStatistics();
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,30 +96,36 @@ const MainPage = () => {
 
       {/* 지원 현황 통계 위젯 */}
       <div className="flex justify-between">
-        <ApplicationStatusWidget title="총 지원 횟수" stats="70개" />
-        <ApplicationStatusWidget title="총 합격률" stats="70%" />
+        <ApplicationStatusWidget
+          title="총 지원 횟수"
+          stats={`${statistics?.totalApplications ?? 0}개`}
+        />
+        <ApplicationStatusWidget
+          title="총 합격률"
+          stats={`${statistics?.totalPassRate ?? 0}%`}
+        />
         <ApplicationStatusWidget
           title="서류 합격률"
-          stats="30%"
-          total={100}
+          stats={`${statistics?.documentPassRate ?? 0}%`}
+          total={statistics?.totalDocumentApplications ?? 0}
           totalUnit="지원"
         />
         <ApplicationStatusWidget
           title="코딩 테스트 합격률"
-          stats="30%"
-          total={100}
+          stats={`${statistics?.codingTestPassRate ?? 0}%`}
+          total={statistics?.totalCodingTestAttempts ?? 0}
           totalUnit="진행"
         />
         <ApplicationStatusWidget
           title="과제 테스트 합격률"
-          stats="30%"
-          total={100}
+          stats={`${statistics?.assignmentPassRate ?? 0}%`}
+          total={statistics?.totalAssignmentAttempts ?? 0}
           totalUnit="진행"
         />
         <ApplicationStatusWidget
           title="면접 합격률"
-          stats="30%"
-          total={100}
+          stats={`${statistics?.interviewPassRate ?? 0}%`}
+          total={statistics?.totalInterviewAttempts ?? 0}
           totalUnit="진행"
         />
       </div>
