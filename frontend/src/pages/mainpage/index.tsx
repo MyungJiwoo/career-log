@@ -4,6 +4,7 @@ import axios from "axios";
 import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
 import ApplicationTableRow from "./components/ApplicationTableRow";
 import Button from "@/components/Button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface Stage {
   order: number;
@@ -32,10 +33,17 @@ const MainPage = () => {
   };
 
   const [jobs, setJobs] = useState<AppliedJob[] | undefined>();
+  const [progress, setProgress] = useState<
+    "in progress" | "pending" | "completed" | "all"
+  >("all");
 
   const fetchAppliedJobs = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/appliedJob");
+      const response = await axios.get("http://localhost:3000/api/appliedJob", {
+        params: {
+          progress,
+        },
+      });
       setJobs(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -46,7 +54,7 @@ const MainPage = () => {
 
   useEffect(() => {
     fetchAppliedJobs();
-  }, []);
+  }, [progress]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -85,25 +93,45 @@ const MainPage = () => {
       {/* 지원 현황 추가 버튼 */}
       <div className="flex justify-between">
         <div className="flex gap-2 justify-start">
-          <Button
-            onClick={() => {}}
-            size="sm"
-            className="px-3"
-            variant="secondary"
+          <ToggleGroup
+            type="single"
+            spacing={2}
+            value={progress}
+            onValueChange={(value) => {
+              if (
+                value === "all" ||
+                value === "in progress" ||
+                value === "pending" ||
+                value === "completed"
+              )
+                setProgress(value);
+            }}
           >
-            진행 예정
-          </Button>
-          <Button onClick={() => {}} size="sm" className="px-3 bg-black-600">
-            진행 중
-          </Button>
-          <Button
-            onClick={() => {}}
-            size="sm"
-            className="px-3"
-            variant="secondary"
-          >
-            진행 종료
-          </Button>
+            <ToggleGroupItem
+              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
+              value="all"
+            >
+              전체
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
+              value="pending"
+            >
+              진행 예정
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
+              value="in progress"
+            >
+              진행 중
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
+              value="completed"
+            >
+              진행 종료
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
         <Button onClick={navigateToCreate} size="sm" className="px-3">
           추가하기
@@ -133,8 +161,9 @@ const MainPage = () => {
         </thead>
 
         <tbody className="text-black-900">
-          {jobs?.map((job) => (
+          {jobs?.map((job, index) => (
             <ApplicationTableRow
+              index={index + 1}
               id={job._id}
               number={job.number}
               companyName={job.companyName}

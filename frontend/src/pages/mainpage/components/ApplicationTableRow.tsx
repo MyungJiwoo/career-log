@@ -9,7 +9,8 @@ interface Stage {
 }
 
 interface ApplicationTableRowProps {
-  number: number;
+  index?: number;
+  number?: number;
   companyName: string;
   position: string;
   appliedDate: string;
@@ -19,7 +20,7 @@ interface ApplicationTableRowProps {
 }
 
 export default function ApplicationTableRow({
-  number,
+  index,
   companyName,
   position,
   appliedDate,
@@ -33,7 +34,7 @@ export default function ApplicationTableRow({
 
   return (
     <tr>
-      <td>{number}</td>
+      <td>{index}</td>
       <td
         onClick={() => navigateToDetail(id)}
         className="underline cursor-pointer underline-offset-4"
