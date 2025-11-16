@@ -152,7 +152,7 @@ const MainPage = () => {
               직무
             </th>
             <th scope="col" className="w-[13%] text-sm font-semibold">
-              지원일
+              진행 현황
             </th>
             <th scope="col" className="w-[50%] text-sm font-semibold">
               채용 절차
@@ -168,7 +168,7 @@ const MainPage = () => {
               number={job.number}
               companyName={job.companyName}
               position={job.position}
-              appliedDate={job.appliedDate}
+              progress={job.progress}
               stages={job.stages}
             />
           ))}

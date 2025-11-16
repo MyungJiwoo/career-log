@@ -1,6 +1,19 @@
 import StageTag from "@/components/StageTag";
 import { useNavigate } from "react-router-dom";
 
+const PROGRESS_LABEL_MAP = {
+  pending: "예정",
+  "in progress": "진행",
+  completed: "종료",
+} as const;
+
+function getProgressLabel(
+  progress: "pending" | "in progress" | "completed" | undefined
+) {
+  if (!progress) return "";
+  return PROGRESS_LABEL_MAP[progress];
+}
+
 interface Stage {
   order: number;
   name: string;
@@ -13,7 +26,7 @@ interface ApplicationTableRowProps {
   number?: number;
   companyName: string;
   position: string;
-  appliedDate: string;
+  appliedDate?: string;
   stages: Stage[];
   progress?: "pending" | "in progress" | "completed";
   id: string;
@@ -23,7 +36,7 @@ export default function ApplicationTableRow({
   index,
   companyName,
   position,
-  appliedDate,
+  progress,
   stages,
   id,
 }: ApplicationTableRowProps) {
@@ -42,7 +55,7 @@ export default function ApplicationTableRow({
         {companyName}
       </td>
       <td>{position}</td>
-      <td>{appliedDate.slice(0, 10)}</td>
+      <td>{getProgressLabel(progress)}</td>
       <td>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent">
           {stages.map((stage) => (
