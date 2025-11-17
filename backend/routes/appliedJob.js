@@ -26,12 +26,15 @@ const authenticateToken = (req, res, next) => {
 /**
  * 새로운 지원 현황 생성
  */
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   try {
     const { companyName, position, appliedDate, stages, contents, progress } =
       req.body;
 
-    const latestJob = await AppliedJob.findOne().sort({ number: -1 });
+    const latestJob = await AppliedJob.findOne({
+      author: req.user.userId,
+    }).sort({ number: -1 });
+
     const nextNumber = latestJob ? latestJob.number + 1 : 1;
 
     const job = new AppliedJob({
@@ -42,6 +45,7 @@ router.post("/", async (req, res) => {
       stages,
       contents,
       progress,
+      author: req.user.userId,
     });
 
     await job.save();
@@ -55,15 +59,19 @@ router.post("/", async (req, res) => {
 /**
  * 모든 지원 현황
  */
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const { progress } = req.query ?? "all";
 
+    const baseFilter = { author: req.user.userId };
+
     if (progress === "all") {
-      const allJobs = await AppliedJob.find().sort({ createdAt: -1 });
+      const allJobs = await AppliedJob.find(baseFilter).sort({ createdAt: -1 });
       return res.json(allJobs);
     }
-    const jobs = await AppliedJob.find({ progress }).sort({ createdAt: -1 });
+    const jobs = await AppliedJob.find({ ...baseFilter, progress }).sort({
+      createdAt: -1,
+    });
     return res.json(jobs);
   } catch (error) {
     console.log(error);
@@ -74,11 +82,14 @@ router.get("/", async (req, res) => {
 /**
  * 합격률 통계
  */
-router.get("/statistics", async (req, res) => {
+router.get("/statistics", authenticateToken, async (req, res) => {
   try {
+    const authorFilter = { author: req.user.userId };
+
     // 전체
-    const totalApplications = await AppliedJob.countDocuments({});
+    const totalApplications = await AppliedJob.countDocuments(authorFilter);
     const allStagePassedCount = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $not: {
           $elemMatch: { status: { $ne: "pass" } },
@@ -92,6 +103,7 @@ router.get("/statistics", async (req, res) => {
 
     // 서류
     const totalDocumentApplications = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(서류|지원서|자기소개서|자소서)/ },
@@ -99,6 +111,7 @@ router.get("/statistics", async (req, res) => {
       },
     });
     const documentPassedCount = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(서류|지원서|자기소개서|자소서)/ },
@@ -114,6 +127,7 @@ router.get("/statistics", async (req, res) => {
 
     // 코딩 테스트
     const totalCodingTestAttempts = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(코딩|코테)/ },
@@ -121,6 +135,7 @@ router.get("/statistics", async (req, res) => {
       },
     });
     const codingTestPassedCount = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(코딩|코테)/ },
@@ -136,6 +151,7 @@ router.get("/statistics", async (req, res) => {
 
     // 과제 테스트
     const totalAssignmentAttempts = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(과제)/ },
@@ -143,6 +159,7 @@ router.get("/statistics", async (req, res) => {
       },
     });
     const assignmentPassedCount = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(과제)/ },
@@ -158,6 +175,7 @@ router.get("/statistics", async (req, res) => {
 
     // 면접
     const totalInterviewAttempts = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(면접|인터뷰)/ },
@@ -165,6 +183,7 @@ router.get("/statistics", async (req, res) => {
       },
     });
     const interviewPassedCount = await AppliedJob.countDocuments({
+      ...authorFilter,
       stages: {
         $elemMatch: {
           name: { $regex: /(면접|인터뷰)/ },
@@ -198,9 +217,12 @@ router.get("/statistics", async (req, res) => {
 /**
  * 지원 현황 상세보기
  */
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
-    const job = await AppliedJob.findById(req.params.id);
+    const job = await AppliedJob.findOne({
+      _id: req.params.id,
+      author: req.user.userId,
+    });
 
     if (!job) {
       return res.status(404).json({ message: "지원 현황을 찾을 수 없습니다." });
@@ -216,10 +238,12 @@ router.get("/:id", async (req, res) => {
 /**
  * 지원 현황 수정
  */
-router.patch("/:id", async (req, res) => {
+router.patch("/:id", authenticateToken, async (req, res) => {
   try {
-    // const number = Number(req.params.number);
-    const job = await AppliedJob.findById(req.params.id);
+    const job = await AppliedJob.findOne({
+      _id: req.params.id,
+      author: req.user.userId,
+    });
 
     if (!job)
       return res.status(404).send({ message: "지원 현황을 찾을 수 없습니다." });
@@ -236,7 +260,7 @@ router.patch("/:id", async (req, res) => {
 /**
  * 지원 현황 세부 전형의 합격/불합격 상태 변경
  */
-router.patch("/:jobId/stages/:stageId", async (req, res) => {
+router.patch("/:jobId/stages/:stageId", authenticateToken, async (req, res) => {
   try {
     const { jobId, stageId } = req.params;
     const { status } = req.body;
@@ -248,7 +272,11 @@ router.patch("/:jobId/stages/:stageId", async (req, res) => {
         .json({ message: "유효하지 않은 status 값입니다." });
     }
 
-    const filter = { _id: jobId, "stages._id": stageId };
+    const filter = {
+      _id: jobId,
+      author: req.user.userId,
+      "stages._id": stageId,
+    };
     const update = { $set: { "stages.$.status": status } };
     const options = {
       new: true,
@@ -270,9 +298,13 @@ router.patch("/:jobId/stages/:stageId", async (req, res) => {
 /**
  * 지원 현황 삭제
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticateToken, async (req, res) => {
   try {
-    const job = await AppliedJob.findById(req.params.id);
+    const job = await AppliedJob.findOne({
+      _id: req.params.id,
+      author: req.user.userId,
+    });
+
     if (!job) {
       return res.status(404).json({ message: "지원 공고를 찾을 수 없습니다." });
     }

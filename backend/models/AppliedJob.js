@@ -5,7 +5,7 @@ const appliedJobSchema = new mongoose.Schema(
     number: {
       type: Number,
       require: true,
-      unique: true,
+      // unique: true,
     },
     companyName: {
       type: String,
@@ -54,6 +54,11 @@ const appliedJobSchema = new mongoose.Schema(
       type: String,
       enum: ["in progress", "pending", "completed"],
       default: "in progress",
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {

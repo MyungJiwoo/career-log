@@ -4,6 +4,7 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
 import appliedJobRoutes from "./routes/appliedJob.js";
 import userRoutes from "./routes/user.js";
 
@@ -20,6 +21,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(cookieParser());
 
 app.use("/api/appliedJob", appliedJobRoutes);
 app.use("/api/auth", userRoutes);
