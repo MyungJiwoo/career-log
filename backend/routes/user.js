@@ -179,8 +179,8 @@ router.post("/verify-token", async (req, res) => {
 
   if (!token) {
     return res
-      .status(400)
-      .json({ isValid: false, message: "토큰이 없습니다." });
+      .status(401)
+      .json({ isValid: false, message: "토큰이 유효하지 않습니다." });
   }
 
   try {
@@ -188,7 +188,9 @@ router.post("/verify-token", async (req, res) => {
 
     return res.status(200).json({ isValid: true, user: decoded });
   } catch (error) {
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    return res
+      .status(401)
+      .json({ isValid: false, message: "토큰이 유효하지 않습니다." });
     console.log(error);
   }
 });
