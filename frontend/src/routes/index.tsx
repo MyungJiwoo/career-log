@@ -3,6 +3,7 @@ import DetailPage from "@/pages/detailpage";
 import MainPage from "@/pages/mainpage";
 import CreatePage from "@/pages/createpage";
 import App from "@/App";
+import LoginPage from "@/pages/loginpage";
 
 const router = createBrowserRouter([
   {
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
       { path: ":id", element: <DetailPage /> },
       { path: "new", element: <CreatePage /> },
       { path: "new/:id", element: <CreatePage /> },
+      { path: "login", element: <LoginPage /> },
     ],
   },
 ]);

@@ -210,7 +210,8 @@ const CreatePage = () => {
   const fetchDetails = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/appliedJob/${id}`
+        `http://localhost:3000/api/appliedJob/${id}`,
+        { withCredentials: true }
       );
       setCompanyName(response.data.companyName);
       setPosition(response.data.position);

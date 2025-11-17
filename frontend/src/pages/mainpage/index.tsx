@@ -57,6 +57,7 @@ const MainPage = () => {
         params: {
           progress,
         },
+        withCredentials: true,
       });
       setJobs(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,7 +70,8 @@ const MainPage = () => {
   const fetchAppliedStatistics = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3000/api/appliedJob/statistics"
+        "http://localhost:3000/api/appliedJob/statistics",
+        { withCredentials: true }
       );
       setStatistics(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
