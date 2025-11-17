@@ -11,6 +11,13 @@ export default function LoginPage() {
     username: "",
     password: "",
   });
+  const [error, setError] = useState<
+    | {
+        message: string;
+        remainingAttempts: number;
+      }
+    | string
+  >();
 
   const handleChange = (e: { target: { name: string; value: string } }) => {
     setFormData({
@@ -35,14 +42,18 @@ export default function LoginPage() {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("로그인 실패:", error.response?.data || error.message);
-      alert("로그인 중 오류가 발생했습니다.");
+      // console.error("로그인 실패:", error.response?.data || error.message);
+      const remainingAttempts = error.response.data.remainingAttempts;
+      setError({
+        message: error.response.data.message,
+        remainingAttempts: remainingAttempts,
+      });
     }
   };
   return (
-    <div className="w-100">
-      <form className="bg-white-100 rounded-2xl w-full p-5 gap-4 flex flex-col">
-        <h1 className="text-2xl font-bold text-black-900 mb-4">로그인</h1>
+    <div className=" bg-white-200 w-screen h-screen flex justify-center items-center">
+      <form className="w-100 bg-white-100 rounded-2xl p-5 gap-6 flex flex-col">
+        <h1 className="text-2xl font-bold text-black-900">Career Log</h1>
         <FieldSet>
           <FieldGroup>
             <Field>
@@ -63,17 +74,29 @@ export default function LoginPage() {
               <Input
                 id="password"
                 name="password"
-                type="text"
+                type="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
+                autoComplete="off"
                 className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
               />
             </Field>
           </FieldGroup>
         </FieldSet>
 
-        <Button onClick={handleSubmit} className="w-full mt-8">
+        {error && (
+          <div className="p-4 text-center text-red-500 rounded-lg bg-red-50 text-sm">
+            {typeof error === "string" ? error : error.message}
+
+            {typeof error !== "string" &&
+              error.remainingAttempts !== undefined && (
+                <div>남은 시도 횟수: {error.remainingAttempts}회</div>
+              )}
+          </div>
+        )}
+
+        <Button onClick={handleSubmit} className="w-full">
           로그인하기
         </Button>
       </form>

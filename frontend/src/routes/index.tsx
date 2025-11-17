@@ -7,6 +7,10 @@ import LoginPage from "@/pages/loginpage";
 
 const router = createBrowserRouter([
   {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
     path: "/",
     element: <App />,
     children: [
@@ -14,7 +18,6 @@ const router = createBrowserRouter([
       { path: ":id", element: <DetailPage /> },
       { path: "new", element: <CreatePage /> },
       { path: "new/:id", element: <CreatePage /> },
-      { path: "login", element: <LoginPage /> },
     ],
   },
 ]);
