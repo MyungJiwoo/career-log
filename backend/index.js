@@ -5,6 +5,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import appliedJobRoutes from "./routes/appliedJob.js";
+import userRoutes from "./routes/user.js";
 
 const app = express();
 const PORT = 3000;
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded());
 
 app.use("/api/appliedJob", appliedJobRoutes);
+app.use("/api/auth", userRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)

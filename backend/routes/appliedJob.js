@@ -1,8 +1,31 @@
 import { Router } from "express";
 import AppliedJob from "../models/AppliedJob.js";
+import jwt from "jsonwebtoken";
 
 const router = Router();
 
+/**
+ * 로그인 확인 미들웨어
+ */
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ message: "토큰이 없습니다." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: "유효하지 않은 토큰입니다." });
+  }
+};
+
+/**
+ * 새로운 지원 현황 생성
+ */
 router.post("/", async (req, res) => {
   try {
     const { companyName, position, appliedDate, stages, contents, progress } =
@@ -29,6 +52,9 @@ router.post("/", async (req, res) => {
   }
 });
 
+/**
+ * 모든 지원 현황
+ */
 router.get("/", async (req, res) => {
   try {
     const { progress } = req.query ?? "all";
@@ -46,7 +72,7 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * 합격률 통계 api
+ * 합격률 통계
  */
 router.get("/statistics", async (req, res) => {
   try {
@@ -169,6 +195,9 @@ router.get("/statistics", async (req, res) => {
   }
 });
 
+/**
+ * 지원 현황 상세보기
+ */
 router.get("/:id", async (req, res) => {
   try {
     const job = await AppliedJob.findById(req.params.id);
@@ -184,6 +213,9 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+/**
+ * 지원 현황 수정
+ */
 router.patch("/:id", async (req, res) => {
   try {
     // const number = Number(req.params.number);
@@ -201,7 +233,9 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-// 전형 하나만 상태 변경
+/**
+ * 지원 현황 세부 전형의 합격/불합격 상태 변경
+ */
 router.patch("/:jobId/stages/:stageId", async (req, res) => {
   try {
     const { jobId, stageId } = req.params;
@@ -233,6 +267,9 @@ router.patch("/:jobId/stages/:stageId", async (req, res) => {
   }
 });
 
+/**
+ * 지원 현황 삭제
+ */
 router.delete("/:id", async (req, res) => {
   try {
     const job = await AppliedJob.findById(req.params.id);
