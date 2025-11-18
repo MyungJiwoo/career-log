@@ -286,7 +286,7 @@ router.post("/verify-token", async (req, res) => {
 
   if (!accessToken) {
     return res
-      .status(401)
+      .status(200)
       .json({ isValid: false, message: "토큰이 유효하지 않습니다." });
   }
 
@@ -296,14 +296,14 @@ router.post("/verify-token", async (req, res) => {
     const user = await User.findById(decoded.userId);
     if (!user || !user.refreshToken) {
       return res
-        .status(401)
+        .status(200)
         .json({ isValid: false, message: "로그인이 만료되었습니다." });
     }
 
     return res.status(200).json({ isValid: true, user: decoded });
   } catch (error) {
     return res
-      .status(401)
+      .status(200)
       .json({ isValid: false, message: "토큰이 유효하지 않습니다." });
   }
 });

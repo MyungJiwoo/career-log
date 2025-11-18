@@ -8,8 +8,8 @@ export function App() {
 
   const verifyToken = async () => {
     try {
-      await axiosInstance.post("/auth/verify-token");
-      setIsAuthenticated(true);
+      const res = await axiosInstance.post("/auth/verify-token");
+      setIsAuthenticated(res.data.isValid);
     } catch (error) {
       console.log("토큰 인증 실패: ", error);
       setIsAuthenticated(false);
