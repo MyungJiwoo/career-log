@@ -96,15 +96,16 @@ router.post("/login", async (req, res) => {
         username: user.username,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "12h" }
+      { expiresIn: "1h" }
     );
-    console.log(token);
+    // console.log(token);
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: "production",
-      sameSite: "strict",
-      maxAge: 12 * 60 * 60 * 1000,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 60 * 60 * 1000,
     });
 
     const userWithoutPassword = user.toObject();
@@ -140,10 +141,11 @@ router.post("/logout", async (req, res) => {
       console.log("토큰 검증 오류: ", error.message);
     }
 
+    const isProd = process.env.NODE_ENV === "production";
     res.clearCookie("token", {
       httpOnly: true,
-      secure: "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     });
 
     res.json({ message: "로그아웃되었습니다." });
@@ -191,7 +193,6 @@ router.post("/verify-token", async (req, res) => {
     return res
       .status(401)
       .json({ isValid: false, message: "토큰이 유효하지 않습니다." });
-    console.log(error);
   }
 });
 

@@ -9,12 +9,13 @@ import appliedJobRoutes from "./routes/appliedJob.js";
 import userRoutes from "./routes/user.js";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT;
 
 // cors 허용
+const isProd = process.env.NODE_ENV === "production";
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: isProd ? process.env.PROD_ORIGIN : process.env.DEV_ORIGIN,
     credentials: true,
   })
 );
