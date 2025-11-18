@@ -1,9 +1,9 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" },
     {
       "source": "/api/:path*",
       "destination": "https://api-career-log.vercel.app/api/:path*"
-    }
+    },
+    { "source": "/(.*)", "destination": "/" }
   ]
 }
