@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
 import ApplicationTableRow from "./components/ApplicationTableRow";
 import Button from "@/components/Button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import axiosInstance from "@/apis/axiosInstance";
 
 interface Stage {
   order: number;
@@ -53,11 +53,10 @@ const MainPage = () => {
 
   const fetchAppliedJobs = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/api/appliedJob", {
+      const response = await axiosInstance.get("/appliedJob", {
         params: {
           progress,
         },
-        withCredentials: true,
       });
       setJobs(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,10 +68,7 @@ const MainPage = () => {
 
   const fetchAppliedStatistics = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:3000/api/appliedJob/statistics",
-        { withCredentials: true }
-      );
+      const response = await axiosInstance.get("/appliedJob/statistics");
       setStatistics(response.data);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

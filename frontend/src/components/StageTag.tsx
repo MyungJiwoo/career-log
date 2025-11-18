@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/popover";
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import axios from "axios";
+import axiosInstance from "@/apis/axiosInstance";
 
 const VARIANT_STYLES = {
   size: {
@@ -58,16 +58,9 @@ export default function StageTag({
 
   const handleStatusUpdate = async (status: string) => {
     try {
-      await axios.patch(
-        `http://localhost:3000/api/appliedJob/${jobId}/stages/${stageId}`,
-        { status: status },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
-        }
-      );
+      await axiosInstance.patch(`/appliedJob/${jobId}/stages/${stageId}`, {
+        status: status,
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

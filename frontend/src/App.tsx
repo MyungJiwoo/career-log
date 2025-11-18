@@ -1,18 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "./apis/axiosInstance";
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const verifyToken = async () => {
     try {
-      await axios.post(
-        "http://localhost:3000/api/auth/verify-token",
-        {},
-        { withCredentials: true }
-      );
+      await axiosInstance.post("/auth/verify-token");
       setIsAuthenticated(true);
     } catch (error) {
       console.log("토큰 인증 실패: ", error);

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import axios from "axios";
 import { FieldSet, FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Button from "@/components/Button";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "@/apis/axiosInstance";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -28,13 +28,7 @@ export default function LoginPage() {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axiosInstance.post("/auth/login", formData);
 
       if (response.data.user) {
         navigate("/");

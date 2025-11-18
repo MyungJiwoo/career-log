@@ -1,8 +1,8 @@
+import axiosInstance from "@/apis/axiosInstance";
 import Button from "@/components/Button";
 import StageTag from "@/components/StageTag";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -38,10 +38,7 @@ const DetailPage = () => {
 
   const fetchDetails = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/appliedJob/${id}`,
-        { withCredentials: true }
-      );
+      const response = await axiosInstance.get(`/appliedJob/${id}`);
       setJob(response.data);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

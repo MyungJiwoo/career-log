@@ -30,10 +30,10 @@ import {
   createCodeBlockSpec,
 } from "@blocknote/core";
 
-import axios from "axios";
 import PlusIcon from "@/components/icons/PlusIcon";
 import MinusIcon from "@/components/icons/MinusIcon";
 import { useNavigate, useParams } from "react-router-dom";
+import axiosInstance from "@/apis/axiosInstance";
 
 const createSchema = () => {
   const blockSpecs = {
@@ -170,27 +170,9 @@ const CreatePage = () => {
     try {
       let response;
       if (id) {
-        response = await axios.patch(
-          `http://localhost:3000/api/appliedJob/${id}`,
-          payload,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
-          }
-        );
+        response = await axiosInstance.patch(`/appliedJob/${id}`, payload);
       } else {
-        response = await axios.post(
-          "http://localhost:3000/api/appliedJob",
-          payload,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            withCredentials: true, // 쿠키 기반 인증을 사용하는 경우 필요
-          }
-        );
+        response = await axiosInstance.post("/appliedJob", payload);
       }
 
       console.log("저장 성공:", response.data);
@@ -209,10 +191,7 @@ const CreatePage = () => {
 
   const fetchDetails = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/appliedJob/${id}`,
-        { withCredentials: true }
-      );
+      const response = await axiosInstance.get(`/appliedJob/${id}`);
       setCompanyName(response.data.companyName);
       setPosition(response.data.position);
       setDate(new Date(response.data.appliedDate));
