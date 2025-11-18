@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     failedLoginAttempts: {
-      type: Date,
+      type: Number,
+      default: 0,
     },
     lastLoginAttempt: {
       type: String,
@@ -36,6 +37,10 @@ const userSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    refreshToken: {
+      type: String,
+      default: null,
     },
   },
   {

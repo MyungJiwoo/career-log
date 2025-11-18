@@ -5,17 +5,17 @@ import jwt from "jsonwebtoken";
 const router = Router();
 
 /**
- * 로그인 확인 미들웨어
+ * 로그인 확인 미들웨어 (엑세스 토큰 기준)
  */
 const authenticateToken = (req, res, next) => {
-  const token = req.cookies.token;
+  const accessToken = req.cookies.accessToken;
 
-  if (!token) {
+  if (!accessToken) {
     return res.status(401).json({ message: "토큰이 없습니다." });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
