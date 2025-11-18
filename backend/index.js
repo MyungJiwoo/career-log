@@ -32,6 +32,12 @@ mongoose
   .then(() => console.log("MongoDB와 연결이 되었습니다."))
   .catch((error) => console.log("MongoDB와 연결이 실패했습니다: ", error));
 
-app.listen(PORT, () => {
-  console.log("Server is running");
-});
+export default app;
+
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3000;
+
+  app.listen(PORT, () => {
+    console.log(`Local server is running on http://localhost:${PORT}`);
+  });
+}
