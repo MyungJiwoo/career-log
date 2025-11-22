@@ -18,6 +18,7 @@ const createAccessToken = (user) => {
     },
     process.env.JWT_SECRET,
     { expiresIn: "15m" }
+    // { expiresIn: "30s" }
   );
 };
 
@@ -32,6 +33,7 @@ const createRefreshToken = (user) => {
     },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: "7d" }
+    // { expiresIn: "2m" }
   );
 };
 
@@ -45,6 +47,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
     maxAge: 15 * 60 * 1000, // 15분
+    // maxAge: 30 * 1000,
   });
 
   // Refresh Token 쿠키
@@ -53,6 +56,7 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
     secure: isProd,
     sameSite: isProd ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    // maxAge: 2 * 60 * 1000,
   });
 };
 
@@ -118,9 +122,22 @@ router.post("/login", async (req, res) => {
 
     // 이미 refreshToken이 있다면 다른 곳에서 로그인 중으로 판단
     if (user.refreshToken) {
-      return res
-        .status(401)
-        .json({ message: "이미 다른 기기에서 로그인되어 있습니다." });
+      try {
+        jwt.verify(user.refreshToken, process.env.JWT_REFRESH_SECRET);
+        return res
+          .status(401)
+          .json({ message: "이미 다른 기기에서 로그인되어 있습니다." });
+      } catch (err) {
+        if (err.name === "TokenExpiredError") {
+          user.refreshToken = null;
+          user.isLoggedIn = false;
+          await user.save(); // 만료된 토큰 정리 후 새 로그인 진행
+        } else {
+          return res
+            .status(401)
+            .json({ message: "세션 검증 중 오류가 발생했습니다." });
+        }
+      }
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
@@ -191,6 +208,18 @@ router.post("/refresh-token", async (req, res) => {
     try {
       decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     } catch (error) {
+      const decodedToken = jwt.decode(refreshToken); // 만료돼도 userId 추출
+      if (decodedToken?.userId) {
+        await User.findByIdAndUpdate(decodedToken.userId, {
+          $set: { refreshToken: null, isLoggedIn: false },
+        });
+      } else {
+        await User.updateOne(
+          { refreshToken },
+          { $set: { refreshToken: null, isLoggedIn: false } }
+        );
+      }
+      clearAuthCookies(res);
       return res
         .status(401)
         .json({ message: "유효하지 않은 리프레시 토큰입니다." });
