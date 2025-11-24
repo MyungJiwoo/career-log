@@ -1,73 +1,52 @@
-# React + TypeScript + Vite
+# 나만의 지원 현황 관리 플랫폼 Career Log
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+'Career Log'는 프론트엔드 개발자 취업 준비생이 복잡한 취업 과정을 체계적으로 관리하고,
+전형 결과를 수치화하여 직관적으로 분석할 수 있도록 돕기 위해 기획되었습니다.
 
-Currently, two official plugins are available:
+> [🚀 Career-Log 서비스 바로가기](https://career-log-mdw.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 1️⃣ 회원가입 & 로그인
 
-## React Compiler
+Career Log은 개인 맞춤형 플랫폼입니다.
+따라서 현재는 별도의 회원가입 페이지가 제공되지 않으며, 서비스 이용을 위한 계정 생성을 원하시면 관리자에게 문의 부탁드립니다.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 2️⃣ 메인 페이지
 
-## Expanding the ESLint configuration
+![메인페이지](https://github.com/user-attachments/assets/615dd620-2ae7-418b-a3ef-d333c5175876)
+메인 페이지는 사용자의 모든 지원 현황을 한눈에 파악할 수 있는 직관적인 대시보드를 지원합니다.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **전형별 합격률 통계**: 전형별 결과를 기반으로 합격률을 수치화하여, 보완이 필요한 부분을 빠르게 파악할 수 있습니다.
+- **진행 현황 필터링**: 지원 현황은 `진행 중`, `진행 예정`, `진행 종료` 세 가지 상태로 필터링할 수 있습니다.
+- **채용 절차 라벨**: 대시보드에서 채용 절차와 결과를 라벨로 관리되며, 클릭하여 전형 결과를 쉽게 변경할 수 있습니다.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 3️⃣ 상세 페이지
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+![Image](https://github.com/user-attachments/assets/f5452e46-0ef7-4f60-be2b-6d88ba6dfae3)
+상세 페이지에서는 지원 현황의 세부 내용을 확인할 수 있습니다.  
+마크다운 문법을 통해 채용 공고 분석 내용이나 회사 분석 내용, 간단한 메모 등을 남길 수 있습니다.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 4️⃣ 지원 현황 등록&편집 페이지
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+![등록&편집페이지](https://github.com/user-attachments/assets/4e88e675-8a6d-4b95-81f9-3437d5d895c4)
+지원 현황 등록&편집 페이지에서는 `기업 이름`, `직무`, `지원한 날짜`, `진행 여부`, `채용 절차`, `기타 내용`을 기록할 수 있습니다.  
+채용 절차는 작성된 순서가 전형 순서로 저장되며,
+기타 내용에서는 마크다운 문법을 통해 글자 크기, 색을 수정할 수 있습니다. 또한 표, 이미지, 리스트를 삽입할 수 있습니다.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 전형 결과 변경
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+전형 라벨을 선택하면 진행 전 / 합격 / 불합격으로 상태를 변경할 수 있습니다.
+|변경 방식|스크린샷|
+|--------|--------|
+|메인 페이지|![메인페이지에서 변경](https://github.com/user-attachments/assets/116c816e-f589-4708-b189-9ad6441ec946)|
+|상세 페이지|![상세페이지에서 변경](https://github.com/user-attachments/assets/147d6817-46e4-4fd3-aad3-86cf1e6d5a58)|
+
+## 5️⃣ 지원 현황 통계
+
+전체 현황, 서류, 코딩 테스트, 과제 테스트, 면접을 기준으로 합격률 통계를 확인할 수 있습니다.
+
+![Image](https://github.com/user-attachments/assets/c9a3db1d-91c6-4c64-baef-dfc3a0beb2e4)
+
+## 개발 예정
+
+- [ ] 지원서 pdf 등록
+- [ ] 지원 현황 캘린더
