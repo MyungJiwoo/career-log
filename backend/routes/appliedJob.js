@@ -31,9 +31,10 @@ router.post("/", authenticateToken, async (req, res) => {
     const { companyName, position, appliedDate, stages, contents, progress } =
       req.body;
 
-    const latestJob = await AppliedJob.findOne({
-      author: req.user.userId,
-    }).sort({ number: -1 });
+    const latestJob = await AppliedJob.findOne().sort({ number: -1 });
+    // const latestJob = await AppliedJob.findOne({
+    //   author: req.user.userId,
+    // }).sort({ number: -1 });
 
     const nextNumber = latestJob ? latestJob.number + 1 : 1;
 
