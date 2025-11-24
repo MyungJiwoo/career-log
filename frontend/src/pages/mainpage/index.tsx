@@ -104,25 +104,25 @@ const MainPage = () => {
         />
         <ApplicationStatusWidget
           title="서류 합격률"
-          stats={`${statistics?.documentPassRate ?? 0}%`}
+          stats={`${statistics?.documentPassRate.toFixed(1) ?? 0}%`}
           total={statistics?.totalDocumentApplications ?? 0}
           totalUnit="지원"
         />
         <ApplicationStatusWidget
           title="코딩 테스트 합격률"
-          stats={`${statistics?.codingTestPassRate ?? 0}%`}
+          stats={`${statistics?.codingTestPassRate.toFixed(1) ?? 0}%`}
           total={statistics?.totalCodingTestAttempts ?? 0}
           totalUnit="진행"
         />
         <ApplicationStatusWidget
           title="과제 테스트 합격률"
-          stats={`${statistics?.assignmentPassRate ?? 0}%`}
+          stats={`${statistics?.assignmentPassRate.toFixed(1) ?? 0}%`}
           total={statistics?.totalAssignmentAttempts ?? 0}
           totalUnit="진행"
         />
         <ApplicationStatusWidget
           title="면접 합격률"
-          stats={`${statistics?.interviewPassRate ?? 0}%`}
+          stats={`${statistics?.interviewPassRate.toFixed(1) ?? 0}%`}
           total={statistics?.totalInterviewAttempts ?? 0}
           totalUnit="진행"
         />
