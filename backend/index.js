@@ -27,7 +27,7 @@ app.use(cookieParser());
 
 app.use("/api/appliedJob", appliedJobRoutes);
 app.use("/api/auth", userRoutes);
-app.use("/api/fileUpload", fileUploadRoutes);
+app.use("/api/upload", fileUploadRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)

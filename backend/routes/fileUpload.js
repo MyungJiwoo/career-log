@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
 import { v4 as uuidV4 } from "uuid";
+import jwt from "jsonwebtoken";
 import { Router } from "express";
 
 const router = Router();
@@ -10,10 +11,10 @@ const router = Router();
  */
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
-  credentials: {
+  credentials: async () => ({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
+  }),
 });
 
 /**
@@ -63,7 +64,8 @@ router.post(
         Key: `post-files/${decodedFileName}`,
         Body: file.buffer,
         ContentType: file.mimetype,
-        ContentDisposition: `attachment; filename*=UTF-8''${encodeURIComponent(
+        // attachment 모드라면 링크를 눌렀을 때 바로 다운 받고, inline이라면 미리보기를 한다.
+        ContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent(
           decodedFileName
         )}`,
       };

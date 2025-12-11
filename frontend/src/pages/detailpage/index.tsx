@@ -1,5 +1,6 @@
 import axiosInstance from "@/apis/axiosInstance";
 import Button from "@/components/Button";
+import FileIcon from "@/components/icons/FileIcon";
 import StageTag from "@/components/StageTag";
 import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
@@ -24,6 +25,7 @@ interface AppliedJob {
   createdAt: string;
   updatedAt: string;
   id: string;
+  fileUrl?: string[];
 }
 
 const DetailPage = () => {
@@ -46,6 +48,13 @@ const DetailPage = () => {
       console.error("불러오기 실패:", error.response?.data || error.message);
       alert("불러오기 중 오류가 발생했습니다.");
     }
+  };
+
+  const getFileNameFromUrl = (url: string) => {
+    if (!url) return "";
+    if (typeof url !== "string") return "";
+    const parts = url.split("/");
+    return parts[parts.length - 1];
   };
 
   useEffect(() => {
@@ -109,6 +118,25 @@ const DetailPage = () => {
               ))}
             </div>
           </div>
+
+          {job?.fileUrl && job?.fileUrl.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <p className="text-sm text-white-700">업로드 파일</p>
+              {job?.fileUrl.map((url, index) => (
+                <Button
+                  round="rounded"
+                  size="sm"
+                  key={index}
+                  onClick={() => window.open(url, "_blank")}
+                  className="px-4 border-gray-100 bg-gray-50 justify-start gap-2"
+                  variant="outline"
+                  leftIcon={<FileIcon className="size-4 text-gray-400" />}
+                >
+                  {getFileNameFromUrl(url)}
+                </Button>
+              ))}
+            </div>
+          )}
 
           <div className="mt-10">
             {/* <p className="text-sm text-white-700">메모</p> */}
