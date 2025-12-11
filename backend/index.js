@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import appliedJobRoutes from "./routes/appliedJob.js";
 import userRoutes from "./routes/user.js";
+import fileUploadRoutes from "./routes/fileUpload.js";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -26,6 +27,7 @@ app.use(cookieParser());
 
 app.use("/api/appliedJob", appliedJobRoutes);
 app.use("/api/auth", userRoutes);
+app.use("/api/upload", fileUploadRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)

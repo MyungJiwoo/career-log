@@ -34,6 +34,7 @@ import PlusIcon from "@/components/icons/PlusIcon";
 import MinusIcon from "@/components/icons/MinusIcon";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "@/apis/axiosInstance";
+import axios from "axios";
 
 const createSchema = () => {
   const blockSpecs = {
@@ -103,6 +104,8 @@ const CreatePage = () => {
       status: "pending",
     },
   ]);
+  const [files, setFiles] = useState<File[]>([]); // Input으로 새로 추가된 파일들
+  const [fileList, setFileList] = useState<string[]>([]); // 서버에서 받은 파일
 
   const handleAddStage = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -150,6 +153,26 @@ const CreatePage = () => {
     setContents(markdown);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    console.log(selected);
+    // setFileList(selected.map((file) => file.name));
+
+    setFiles((prev) => {
+      const merged = [...prev, ...selected];
+
+      // 파일 이름 + 용량 기준으로 중복 제거
+      const unique = merged.filter(
+        (file, index, array) =>
+          array.findIndex(
+            (f) => f.name === file.name && f.size === file.size
+          ) === index
+      );
+
+      return unique;
+    });
+  };
+
   const handleSubmit = async () => {
     const parsedDate = date
       ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
@@ -158,6 +181,27 @@ const CreatePage = () => {
         )}-${String(date.getDate()).padStart(2, "0")}`
       : "";
 
+    const uploadedFiles = await Promise.all(
+      files.map(async (file) => {
+        const fileFormData = new FormData();
+        const encodedFileName = encodeURIComponent(file.name);
+        fileFormData.append("file", file);
+        fileFormData.append("originalName", encodedFileName);
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/upload/file`,
+          fileFormData,
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        return response.data.fileUrl;
+      })
+    );
+
     const payload = {
       companyName,
       position,
@@ -165,6 +209,7 @@ const CreatePage = () => {
       stages,
       contents,
       progress: progressStatus,
+      fileUrl: [...fileList, ...uploadedFiles],
     };
 
     try {
@@ -197,6 +242,7 @@ const CreatePage = () => {
       setDate(new Date(response.data.appliedDate));
       setStages(response.data.stages);
       setProgressStatus(response.data.progress);
+      setFileList(response.data.fileUrl);
       const parsedBlocks = JSON.parse(response.data.contents);
       editor.replaceBlocks(editor.document, parsedBlocks);
 
@@ -204,6 +250,15 @@ const CreatePage = () => {
     } catch (error: any) {
       console.error("불러오기 실패:", error.response?.data || error.message);
       alert("불러오기 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleFileDelete = (file: string | File) => {
+    if (typeof file === "string") {
+      setFileList((prev) => prev.filter((item) => item !== file));
+    }
+    if (file instanceof File) {
+      setFiles((prev) => prev.filter((item) => item !== file));
     }
   };
 
@@ -354,6 +409,87 @@ const CreatePage = () => {
                   )}
                 </div>
               ))}
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="companyName">파일</FieldLabel>
+              <Input
+                type="file"
+                id="fileUrl"
+                multiple
+                onChange={handleFileSelect}
+                className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+              />
+              <div className="flex flex-col gap-2">
+                {fileList.length > 0 && (
+                  <ul className="rounded-lg divide-y divide-gray-200 flex flex-col gap-2">
+                    {fileList.map((file) => (
+                      <li className="flex justify-between border rounded-lg px-2 py-1 border-white-200 bg-white-100 shadow-none font-normal cursor-pointer">
+                        <div className="flex items-center space-x-3 px-2 py-1 ">
+                          <div>
+                            <p className="text-sm font-sm text-gray-700">
+                              {file}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleFileDelete(file)}
+                          className="text-gray-300 hover:text-gray-400 transition-colors cursor-pointer"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {files.length > 0 && (
+                  <ul className="rounded-lg divide-y divide-gray-200 flex flex-col gap-2">
+                    {files.map((file) => (
+                      <li className="flex justify-between border rounded-lg px-2 py-1 border-white-200 bg-white-100 shadow-none font-normal cursor-pointer">
+                        <div className="flex items-center space-x-3 px-2 py-1 ">
+                          <div>
+                            <p className="text-sm font-sm text-gray-700">
+                              {file.name}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleFileDelete(file)}
+                          className="text-gray-300 hover:text-gray-400 transition-colors cursor-pointer"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </Field>
 
             <Field>

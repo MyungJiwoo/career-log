@@ -60,6 +60,10 @@ const appliedJobSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    fileUrl: {
+      type: [String],
+      trim: true,
+    },
   },
   {
     timestamps: true,

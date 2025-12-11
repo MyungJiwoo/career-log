@@ -1,8 +1,20 @@
 import { Router } from "express";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import AppliedJob from "../models/AppliedJob.js";
 import jwt from "jsonwebtoken";
 
 const router = Router();
+
+/**
+ * s3 객체 생성
+ */
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: async () => ({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  }),
+});
 
 /**
  * 로그인 확인 미들웨어 (엑세스 토큰 기준)
@@ -28,8 +40,15 @@ const authenticateToken = (req, res, next) => {
  */
 router.post("/", authenticateToken, async (req, res) => {
   try {
-    const { companyName, position, appliedDate, stages, contents, progress } =
-      req.body;
+    const {
+      companyName,
+      position,
+      appliedDate,
+      stages,
+      contents,
+      progress,
+      fileUrl,
+    } = req.body;
 
     const latestJob = await AppliedJob.findOne().sort({ number: -1 });
     // const latestJob = await AppliedJob.findOne({
@@ -47,6 +66,7 @@ router.post("/", authenticateToken, async (req, res) => {
       contents,
       progress,
       author: req.user.userId,
+      fileUrl,
     });
 
     await job.save();
@@ -241,6 +261,17 @@ router.get("/:id", authenticateToken, async (req, res) => {
  */
 router.patch("/:id", authenticateToken, async (req, res) => {
   try {
+    console.log(req.body);
+    const {
+      companyName,
+      position,
+      appliedDate,
+      stages,
+      contents,
+      progress,
+      fileUrl: newFileUrls = [],
+    } = req.body;
+
     const job = await AppliedJob.findOne({
       _id: req.params.id,
       author: req.user.userId,
@@ -249,9 +280,57 @@ router.patch("/:id", authenticateToken, async (req, res) => {
     if (!job)
       return res.status(404).send({ message: "지원 현황을 찾을 수 없습니다." });
 
-    Object.assign(job, req.body);
-    await job.save();
-    res.json(job);
+    const oldFileUrls = job.fileUrl || [];
+    const deletedFiles = oldFileUrls.filter(
+      (url) => !newFileUrls.includes(url)
+    );
+
+    const getS3KeyFromUrl = (url) => {
+      try {
+        const urlObj = new URL(url);
+        return decodeURIComponent(urlObj.pathname.substring(1));
+      } catch (error) {
+        console.log("URL 파싱 에러: ", err);
+        return null;
+      }
+    };
+
+    for (const url of deletedFiles) {
+      const key = getS3KeyFromUrl(url);
+
+      if (key) {
+        try {
+          await s3Client.send(
+            new DeleteObjectCommand({
+              Bucket: process.env.AWS_BUCKET_NAME,
+              Key: key,
+            })
+          );
+          console.log("파일 삭제 완료: ", key);
+        } catch (error) {
+          console.log("S3 파일 삭제 에러: ", error);
+          return null;
+        }
+      }
+    }
+
+    const updatedJob = await AppliedJob.findByIdAndUpdate(
+      req.params.id,
+      {
+        $set: {
+          companyName,
+          position,
+          appliedDate,
+          stages,
+          contents,
+          progress,
+          fileUrl: newFileUrls,
+        },
+      },
+      { new: true }
+    );
+
+    res.json(updatedJob);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
@@ -308,6 +387,36 @@ router.delete("/:id", authenticateToken, async (req, res) => {
 
     if (!job) {
       return res.status(404).json({ message: "지원 공고를 찾을 수 없습니다." });
+    }
+
+    const getS3KeyFromUrl = (url) => {
+      try {
+        const urlObj = new URL(url);
+        return decodeURIComponent(urlObj.pathname.substring(1));
+      } catch (error) {
+        console.log("URL 파싱 에러: ", error);
+        return null;
+      }
+    };
+
+    const allFiles = Array.isArray(job.fileUrl) ? job.fileUrl : [];
+
+    for (const fileUrl of allFiles) {
+      const key = getS3KeyFromUrl(fileUrl);
+
+      if (key) {
+        try {
+          await s3Client.send(
+            new DeleteObjectCommand({
+              Bucket: process.env.AWS_BUCKET_NAME,
+              Key: key,
+            })
+          );
+          console.log("파일 삭제 완료: ", key);
+        } catch (error) {
+          console.log("S3 파일 삭제 에러: ", error);
+        }
+      }
     }
 
     await job.deleteOne();
