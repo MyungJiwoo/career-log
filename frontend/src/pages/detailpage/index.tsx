@@ -6,6 +6,16 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Stage {
   order: number;
@@ -32,6 +42,7 @@ const DetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [job, setJob] = useState<AppliedJob | undefined | null>();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const editor = useCreateBlockNote();
 
   const navigateToEdit = (id: string) => {
@@ -50,20 +61,18 @@ const DetailPage = () => {
     }
   };
 
-  const deleteDetails = async () => {
+  const confirmDelete = async () => {
     try {
-      const isConfirmed = window.confirm("삭제하시겠습니까?");
-      if (!isConfirmed) return;
-
       await axiosInstance.delete(`/appliedJob/${id}`);
       setJob(null);
-      alert("삭제가 완료되었습니다!");
-      navigate(`/`);
+      navigate("/");
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      console.error("불러오기 실패:", error.response?.data || error.message);
-      alert("불러오기 중 오류가 발생했습니다.");
+      console.error("삭제 실패:", error.response?.data || error.message);
+      alert("삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeleteModalOpen(false);
     }
   };
 
@@ -108,9 +117,7 @@ const DetailPage = () => {
               편집
             </Button>
             <Button
-              onClick={() => {
-                if (id) deleteDetails();
-              }}
+              onClick={() => setDeleteModalOpen(true)}
               variant="ghost"
               size="md"
               className="py-2 px-3 min-h-fit"
@@ -173,6 +180,39 @@ const DetailPage = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제 후에는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button
+                onClick={() => setDeleteModalOpen(false)}
+                size="md"
+                variant="ghost"
+                className="shadow-none"
+              >
+                취소
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                onClick={confirmDelete}
+                size="md"
+                variant="primary"
+                className="shadow-none"
+              >
+                삭제
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
