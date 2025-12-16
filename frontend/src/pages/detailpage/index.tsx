@@ -31,7 +31,7 @@ interface AppliedJob {
 const DetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [job, setJob] = useState<AppliedJob | undefined>();
+  const [job, setJob] = useState<AppliedJob | undefined | null>();
   const editor = useCreateBlockNote();
 
   const navigateToEdit = (id: string) => {
@@ -42,6 +42,23 @@ const DetailPage = () => {
     try {
       const response = await axiosInstance.get(`/appliedJob/${id}`);
       setJob(response.data);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("불러오기 실패:", error.response?.data || error.message);
+      alert("불러오기 중 오류가 발생했습니다.");
+    }
+  };
+
+  const deleteDetails = async () => {
+    try {
+      const isConfirmed = window.confirm("삭제하시겠습니까?");
+      if (!isConfirmed) return;
+
+      await axiosInstance.delete(`/appliedJob/${id}`);
+      setJob(null);
+      alert("삭제가 완료되었습니다!");
+      navigate(`/`);
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -79,16 +96,28 @@ const DetailPage = () => {
           <h1 className="text-3xl font-bold text-black-900">
             {job?.companyName}
           </h1>
-          <Button
-            onClick={() => {
-              if (id) navigateToEdit(id);
-            }}
-            variant="ghost"
-            size="md"
-            className="py-2 px-3 min-h-fit"
-          >
-            편집
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              onClick={() => {
+                if (id) navigateToEdit(id);
+              }}
+              variant="ghost"
+              size="md"
+              className="py-2 px-3 min-h-fit"
+            >
+              편집
+            </Button>
+            <Button
+              onClick={() => {
+                if (id) deleteDetails();
+              }}
+              variant="ghost"
+              size="md"
+              className="py-2 px-3 min-h-fit"
+            >
+              삭제
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-6">
