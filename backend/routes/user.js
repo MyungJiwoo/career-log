@@ -124,9 +124,9 @@ router.post("/login", async (req, res) => {
     if (user.refreshToken) {
       try {
         jwt.verify(user.refreshToken, process.env.JWT_REFRESH_SECRET);
-        return res
-          .status(401)
-          .json({ message: "이미 다른 기기에서 로그인되어 있습니다." });
+        // return res
+        //   .status(401)
+        //   .json({ message: "이미 다른 기기에서 로그인되어 있습니다." });
       } catch (err) {
         if (err.name === "TokenExpiredError") {
           user.refreshToken = null;
