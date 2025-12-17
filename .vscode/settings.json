@@ -1,0 +1,23 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "eslint.validate": [
+    "typescript",
+    "javascript",
+    "typescriptreact",
+    "javascriptreact"
+  ],
+  "eslint.useFlatConfig": true,
+  "eslint.workingDirectories": [
+    { "mode": "auto" },
+    { "pattern": "./apps/*" },
+    { "pattern": "./packages/*" }
+  ],
+  "json.schemaDownload.enable": false,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
+}

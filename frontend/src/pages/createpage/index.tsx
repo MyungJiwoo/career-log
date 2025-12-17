@@ -1,9 +1,26 @@
-import { Button as ShadcnButton } from "@/components/ui/button";
+import "@blocknote/core/fonts/inter.css";
+import "@blocknote/mantine/style.css";
+
+import {
+  BlockNoteSchema,
+  createCodeBlockSpec,
+  defaultBlockSpecs,
+} from "@blocknote/core";
+import { BlockNoteView } from "@blocknote/mantine";
+import { useCreateBlockNote } from "@blocknote/react";
+import axios from "axios";
+import { ChevronDownIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import axiosInstance from "@/apis/axiosInstance";
 import Button from "@/components/Button";
+import MinusIcon from "@/components/icons/MinusIcon";
+import PlusIcon from "@/components/icons/PlusIcon";
+import { Button as ShadcnButton } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { FieldSet, FieldGroup, Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel,FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Popover,
   PopoverContent,
@@ -16,25 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDownIcon } from "lucide-react";
-
-import { useEffect, useState } from "react";
-
-import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView } from "@blocknote/mantine";
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
-import {
-  BlockNoteSchema,
-  defaultBlockSpecs,
-  createCodeBlockSpec,
-} from "@blocknote/core";
-
-import PlusIcon from "@/components/icons/PlusIcon";
-import MinusIcon from "@/components/icons/MinusIcon";
-import { useNavigate, useParams } from "react-router-dom";
-import axiosInstance from "@/apis/axiosInstance";
-import axios from "axios";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const createSchema = () => {
   const blockSpecs = {
@@ -270,7 +269,7 @@ const CreatePage = () => {
     <div className="flex flex-col gap-6 flex-1">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-black-900">진행 일정 추가</h1>
-        <Button onClick={handleSubmit} size="md">
+        <Button size="md" onClick={handleSubmit}>
           저장하기
         </Button>
       </div>
@@ -281,22 +280,22 @@ const CreatePage = () => {
             <Field>
               <FieldLabel htmlFor="companyName">기업 이름</FieldLabel>
               <Input
+                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
                 id="companyName"
                 type="text"
                 value={companyName}
                 onChange={(event) => setCompanyName(event.target.value)}
-                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
               />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="position">직무</FieldLabel>
               <Input
+                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
                 id="position"
                 type="text"
                 value={position}
                 onChange={(event) => setPosition(event.target.value)}
-                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
               />
             </Field>
 
@@ -305,22 +304,22 @@ const CreatePage = () => {
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <ShadcnButton
-                    variant="outline"
-                    id="date"
                     className="justify-between border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal cursor-pointer"
+                    id="date"
+                    variant="outline"
                   >
                     {date ? date.toLocaleDateString() : "Select date"}
                     <ChevronDownIcon />
                   </ShadcnButton>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-auto overflow-hidden p-0"
                   align="start"
+                  className="w-auto overflow-hidden p-0"
                 >
                   <Calendar
+                    captionLayout="dropdown"
                     mode="single"
                     selected={date}
-                    captionLayout="dropdown"
                     onSelect={(date) => {
                       setDate(date);
                       setOpen(false);
@@ -349,8 +348,8 @@ const CreatePage = () => {
               {stages?.map((stage, index) => (
                 <div className="flex gap-2 items-center">
                   <Input
-                    type="text"
                     className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
+                    type="text"
                     value={stage.name}
                     onChange={(event) =>
                       handleStageNameChange(stage.order, event.target.value)
@@ -358,8 +357,8 @@ const CreatePage = () => {
                   />
                   <ToggleGroup
                     type="single"
-                    variant="outline"
                     value={stage.status}
+                    variant="outline"
                     onValueChange={(value) =>
                       value &&
                       handleStageStatusChange(
@@ -381,8 +380,8 @@ const CreatePage = () => {
                       합격
                     </ToggleGroupItem>
                     <ToggleGroupItem
-                      value="nonpass"
                       className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+                      value="nonpass"
                     >
                       불합격
                     </ToggleGroupItem>
@@ -390,22 +389,22 @@ const CreatePage = () => {
 
                   {stages.length - 1 !== index ? (
                     <Button
-                      onClick={(event) => handleDeleteStage(event, stage.order)}
-                      variant="secondary"
-                      size="sm"
-                      round="circular"
                       className="size-8"
                       rightIcon={<MinusIcon className="text-gray-400 size-5" />}
-                    ></Button>
+                      round="circular"
+                      size="sm"
+                      variant="secondary"
+                      onClick={(event) => handleDeleteStage(event, stage.order)}
+                     />
                   ) : (
                     <Button
-                      onClick={(event) => handleAddStage(event)}
-                      variant="primary"
-                      size="sm"
-                      round="circular"
                       className="size-8"
                       rightIcon={<PlusIcon className="text-white-200 size-5" />}
-                    ></Button>
+                      round="circular"
+                      size="sm"
+                      variant="primary"
+                      onClick={(event) => handleAddStage(event)}
+                     />
                   )}
                 </div>
               ))}
@@ -414,11 +413,11 @@ const CreatePage = () => {
             <Field>
               <FieldLabel htmlFor="companyName">파일</FieldLabel>
               <Input
-                type="file"
-                id="fileUrl"
                 multiple
-                onChange={handleFileSelect}
                 className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+                id="fileUrl"
+                type="file"
+                onChange={handleFileSelect}
               />
               <div className="flex flex-col gap-2">
                 {fileList.length > 0 && (
@@ -433,9 +432,9 @@ const CreatePage = () => {
                           </div>
                         </div>
                         <button
+                          className="text-gray-300 hover:text-gray-400 transition-colors cursor-pointer"
                           type="button"
                           onClick={() => handleFileDelete(file)}
-                          className="text-gray-300 hover:text-gray-400 transition-colors cursor-pointer"
                         >
                           <svg
                             className="w-4 h-4"
@@ -444,10 +443,10 @@ const CreatePage = () => {
                             viewBox="0 0 24 24"
                           >
                             <path
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                             />
                           </svg>
                         </button>
@@ -467,9 +466,9 @@ const CreatePage = () => {
                           </div>
                         </div>
                         <button
+                          className="text-gray-300 hover:text-gray-400 transition-colors cursor-pointer"
                           type="button"
                           onClick={() => handleFileDelete(file)}
-                          className="text-gray-300 hover:text-gray-400 transition-colors cursor-pointer"
                         >
                           <svg
                             className="w-4 h-4"
@@ -478,10 +477,10 @@ const CreatePage = () => {
                             viewBox="0 0 24 24"
                           >
                             <path
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                             />
                           </svg>
                         </button>

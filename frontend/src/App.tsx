@@ -1,7 +1,8 @@
-import { Navigate, Outlet } from "react-router-dom";
-import Header from "./components/Header";
 import { useEffect, useState } from "react";
+import { Navigate, Outlet } from "react-router-dom";
+
 import axiosInstance from "./apis/axiosInstance";
+import Header from "./components/Header";
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -25,7 +26,7 @@ export function App() {
   }
 
   return !isAuthenticated ? (
-    <Navigate to="/login" replace />
+    <Navigate replace to="/login" />
   ) : (
     <div className="flex flex-col items-center bg-white-200">
       <Header />

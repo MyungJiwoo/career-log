@@ -1,10 +1,12 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
-import ApplicationTableRow from "./components/ApplicationTableRow";
+import { useNavigate } from "react-router-dom";
+
+import axiosInstance from "@/apis/axiosInstance";
 import Button from "@/components/Button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import axiosInstance from "@/apis/axiosInstance";
+
+import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
+import ApplicationTableRow from "./components/ApplicationTableRow";
 
 interface Stage {
   order: number;
@@ -95,34 +97,34 @@ const MainPage = () => {
       {/* 지원 현황 통계 위젯 */}
       <div className="flex justify-between">
         <ApplicationStatusWidget
-          title="총 지원 횟수"
           stats={`${statistics?.totalApplications ?? 0}개`}
+          title="총 지원 횟수"
         />
         <ApplicationStatusWidget
-          title="총 합격률"
           stats={`${statistics?.totalPassRate ?? 0}%`}
+          title="총 합격률"
         />
         <ApplicationStatusWidget
-          title="서류 합격률"
           stats={`${statistics?.documentPassRate.toFixed(1) ?? 0}%`}
+          title="서류 합격률"
           total={statistics?.totalDocumentApplications ?? 0}
           totalUnit="지원"
         />
         <ApplicationStatusWidget
-          title="코딩 테스트 합격률"
           stats={`${statistics?.codingTestPassRate.toFixed(1) ?? 0}%`}
+          title="코딩 테스트 합격률"
           total={statistics?.totalCodingTestAttempts ?? 0}
           totalUnit="진행"
         />
         <ApplicationStatusWidget
-          title="과제 테스트 합격률"
           stats={`${statistics?.assignmentPassRate.toFixed(1) ?? 0}%`}
+          title="과제 테스트 합격률"
           total={statistics?.totalAssignmentAttempts ?? 0}
           totalUnit="진행"
         />
         <ApplicationStatusWidget
-          title="면접 합격률"
           stats={`${statistics?.interviewPassRate.toFixed(1) ?? 0}%`}
+          title="면접 합격률"
           total={statistics?.totalInterviewAttempts ?? 0}
           totalUnit="진행"
         />
@@ -132,8 +134,8 @@ const MainPage = () => {
       <div className="flex justify-between">
         <div className="flex gap-2 justify-start">
           <ToggleGroup
-            type="single"
             spacing={2}
+            type="single"
             value={progress}
             onValueChange={(value) => {
               if (
@@ -171,7 +173,7 @@ const MainPage = () => {
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
-        <Button onClick={navigateToCreate} size="sm" className="px-3">
+        <Button className="px-3" size="sm" onClick={navigateToCreate}>
           추가하기
         </Button>
       </div>
@@ -180,19 +182,19 @@ const MainPage = () => {
       <table className="w-full table-fixed border-separate bg-white-100 rounded-2xl p-4 border-spacing-x-4 border-spacing-y-3">
         <thead className="sticky top-0 z-10 text-black-600">
           <tr className="text-left">
-            <th scope="col" className="w-[5%] text-sm font-semibold">
+            <th className="w-[5%] text-sm font-semibold" scope="col">
               번호
             </th>
-            <th scope="col" className="w-[20%] text-sm font-semibold">
+            <th className="w-[20%] text-sm font-semibold" scope="col">
               기업명
             </th>
-            <th scope="col" className="w-[12%] text-sm font-semibold">
+            <th className="w-[12%] text-sm font-semibold" scope="col">
               직무
             </th>
-            <th scope="col" className="w-[13%] text-sm font-semibold">
+            <th className="w-[13%] text-sm font-semibold" scope="col">
               진행 현황
             </th>
-            <th scope="col" className="w-[50%] text-sm font-semibold">
+            <th className="w-[50%] text-sm font-semibold" scope="col">
               채용 절차
             </th>
           </tr>
@@ -201,10 +203,10 @@ const MainPage = () => {
         <tbody className="text-black-900">
           {jobs?.map((job, index) => (
             <ApplicationTableRow
-              index={index + 1}
-              id={job._id}
-              number={job.number}
               companyName={job.companyName}
+              id={job._id}
+              index={index + 1}
+              number={job.number}
               position={job.position}
               progress={job.progress}
               stages={job.stages}
