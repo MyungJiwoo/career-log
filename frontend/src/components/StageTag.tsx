@@ -1,12 +1,13 @@
+import { useState } from "react";
 import { twJoin } from "tailwind-merge";
+
+import axiosInstance from "@/apis/axiosInstance";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import axiosInstance from "@/apis/axiosInstance";
 
 const VARIANT_STYLES = {
   size: {
@@ -76,14 +77,14 @@ export default function StageTag({
           <p className={tagClassNames}>{name}</p>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto overflow-hidden p-4 flex flex-col gap-2"
           align="start"
+          className="w-auto overflow-hidden p-4 flex flex-col gap-2"
         >
           <p className="text-sm text-white-700">전형 결과</p>
           <ToggleGroup
             type="single"
-            variant="outline"
             value={stageStatus}
+            variant="outline"
             onValueChange={handleChange}
           >
             <ToggleGroupItem
@@ -99,8 +100,8 @@ export default function StageTag({
               합격
             </ToggleGroupItem>
             <ToggleGroupItem
-              value="nonpass"
               className="border rounded-lg px-2 py-1 border-white-200 shadow-none font-normal"
+              value="nonpass"
             >
               불합격
             </ToggleGroupItem>

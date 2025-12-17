@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { FieldSet, FieldGroup, Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import Button from "@/components/Button";
 import { useNavigate } from "react-router-dom";
+
 import axiosInstance from "@/apis/axiosInstance";
+import Button from "@/components/Button";
+import { Field, FieldGroup, FieldLabel,FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -53,27 +54,27 @@ export default function LoginPage() {
             <Field>
               <FieldLabel htmlFor="username">아이디</FieldLabel>
               <Input
+                required
+                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
                 id="username"
                 name="username"
                 type="text"
                 value={formData.username}
                 onChange={handleChange}
-                required
-                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
               />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="password">비밀번호</FieldLabel>
               <Input
+                required
+                autoComplete="off"
+                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
                 id="password"
                 name="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                required
-                autoComplete="off"
-                className="border rounded-lg px-2 py-1 border-white-200 shadow-none"
               />
             </Field>
           </FieldGroup>
@@ -90,7 +91,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <Button onClick={handleSubmit} className="w-full">
+        <Button className="w-full" onClick={handleSubmit}>
           로그인하기
         </Button>
       </form>
