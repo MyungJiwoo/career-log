@@ -6,6 +6,16 @@ import { BlockNoteView } from "@blocknote/mantine";
 import { useCreateBlockNote } from "@blocknote/react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Stage {
   order: number;
@@ -31,7 +41,8 @@ interface AppliedJob {
 const DetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [job, setJob] = useState<AppliedJob | undefined>();
+  const [job, setJob] = useState<AppliedJob | undefined | null>();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const editor = useCreateBlockNote();
 
   const navigateToEdit = (id: string) => {
@@ -47,6 +58,21 @@ const DetailPage = () => {
     } catch (error: any) {
       console.error("불러오기 실패:", error.response?.data || error.message);
       alert("불러오기 중 오류가 발생했습니다.");
+    }
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await axiosInstance.delete(`/appliedJob/${id}`);
+      setJob(null);
+      navigate("/");
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error("삭제 실패:", error.response?.data || error.message);
+      alert("삭제 중 오류가 발생했습니다.");
+    } finally {
+      setDeleteModalOpen(false);
     }
   };
 
@@ -79,16 +105,26 @@ const DetailPage = () => {
           <h1 className="text-3xl font-bold text-black-900">
             {job?.companyName}
           </h1>
-          <Button
-            onClick={() => {
-              if (id) navigateToEdit(id);
-            }}
-            variant="ghost"
-            size="md"
-            className="py-2 px-3 min-h-fit"
-          >
-            편집
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              onClick={() => {
+                if (id) navigateToEdit(id);
+              }}
+              variant="ghost"
+              size="md"
+              className="py-2 px-3 min-h-fit"
+            >
+              편집
+            </Button>
+            <Button
+              onClick={() => setDeleteModalOpen(true)}
+              variant="ghost"
+              size="md"
+              className="py-2 px-3 min-h-fit"
+            >
+              삭제
+            </Button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -144,6 +180,39 @@ const DetailPage = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제 후에는 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button
+                onClick={() => setDeleteModalOpen(false)}
+                size="md"
+                variant="ghost"
+                className="shadow-none"
+              >
+                취소
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                onClick={confirmDelete}
+                size="md"
+                variant="primary"
+                className="shadow-none"
+              >
+                삭제
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
