@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-interface ErrorResponse {
+export interface ErrorResponse {
   message?: string;
   error?: string; // 파일 업로드 실패
   remainingAttempts?: number; // 로그인 실패
@@ -23,8 +23,11 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // 로그인 실패(401) 시 인터셉터가 리프레시 로직을 타서 페이지를 새로고침(forceLogout)하느라 컴포넌트의 onError가 실행되지 않음
+    const isLoginRequest = originalRequest.url.includes('/auth/login');
+
     // 401이면서, 이미 한 번 재시도한 요청이면 그냥 실패시킴
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isLoginRequest) {
       originalRequest._retry = true;
 
       // 이미 다른 요청이 refresh 중이면, refresh 끝난 뒤 다시 시도
