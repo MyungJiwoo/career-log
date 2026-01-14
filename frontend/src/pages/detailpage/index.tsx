@@ -1,9 +1,11 @@
 import { BlockNoteView } from '@blocknote/mantine';
 import { useCreateBlockNote } from '@blocknote/react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import axiosInstance from '@/apis/axiosInstance';
+import { type AppliedJob, deleteJob, fetchJobDetail } from '@/apis/http';
 import Button from '@/components/Button';
 import FileIcon from '@/components/icons/FileIcon';
 import StageTag from '@/components/StageTag';
@@ -18,62 +20,44 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface Stage {
-  order: number;
-  name: string;
-  status: 'pending' | 'pass' | 'nonpass';
-  _id: string;
-}
-
-interface AppliedJob {
-  number: number;
-  companyName: string;
-  position: string;
-  appliedDate: string;
-  stages: Stage[];
-  contents: string;
-  progress: 'pending' | 'in progress' | 'completed';
-  createdAt: string;
-  updatedAt: string;
-  id: string;
-  fileUrl?: string[];
-}
-
 const DetailPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [job, setJob] = useState<AppliedJob | undefined | null>();
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const queryClient = useQueryClient();
   const editor = useCreateBlockNote();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  // 지원 상세 정보 조회
+  const {
+    data: job,
+    isLoading,
+    isError,
+  } = useQuery<AppliedJob>({
+    queryKey: ['appliedJob', id],
+    queryFn: () => fetchJobDetail(id!),
+    enabled: !!id,
+  });
+
+  // 지원 정보 삭제
+  const deleteMutation = useMutation({
+    mutationFn: deleteJob,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appliedJobs'] });
+      navigate('/');
+    },
+    onError: (error: AxiosError) => {
+      console.error('삭제 실패:', error.response?.data || error.message);
+      alert('삭제 중 오류가 발생했습니다.');
+    },
+  });
 
   const navigateToEdit = (id: string) => {
     navigate(`/new/${id}`);
   };
 
-  const fetchDetails = async () => {
-    try {
-      const response = await axiosInstance.get(`/appliedJob/${id}`);
-      setJob(response.data);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error('불러오기 실패:', error.response?.data || error.message);
-      alert('불러오기 중 오류가 발생했습니다.');
-    }
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await axiosInstance.delete(`/appliedJob/${id}`);
-      setJob(null);
-      navigate('/');
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error('삭제 실패:', error.response?.data || error.message);
-      alert('삭제 중 오류가 발생했습니다.');
-    } finally {
-      setDeleteModalOpen(false);
+  const confirmDelete = () => {
+    if (id) {
+      deleteMutation.mutate(id);
     }
   };
 
@@ -85,10 +69,6 @@ const DetailPage = () => {
   };
 
   useEffect(() => {
-    fetchDetails();
-  }, []);
-
-  useEffect(() => {
     if (!job?.contents) return;
 
     try {
@@ -98,6 +78,24 @@ const DetailPage = () => {
       console.error('BlockNote parsing failed:', error);
     }
   }, [job, editor]);
+
+  // 로딩 상태 처리
+  if (isLoading) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <p className='text-gray-500'>로딩 중...</p>
+      </div>
+    );
+  }
+
+  // 에러 상태 처리
+  if (isError || !job) {
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <p className='text-red-500'>데이터를 불러오는 중 오류가 발생했습니다.</p>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-1 flex-col'>
@@ -138,7 +136,14 @@ const DetailPage = () => {
             <p className='text-white-700 text-sm'>채용 절차</p>
             <div className='flex gap-2'>
               {job?.stages.map((stage) => (
-                <StageTag jobId={id} name={stage.name} size='md' stageId={stage._id} status={stage.status} />
+                <StageTag
+                  key={stage._id}
+                  jobId={id}
+                  name={stage.name}
+                  size='md'
+                  stageId={stage._id}
+                  status={stage.status}
+                />
               ))}
             </div>
           </div>
@@ -146,9 +151,9 @@ const DetailPage = () => {
           {job?.fileUrl && job?.fileUrl.length > 0 && (
             <div className='flex flex-col gap-1'>
               <p className='text-white-700 text-sm'>업로드 파일</p>
-              {job?.fileUrl.map((url, index) => (
+              {job?.fileUrl.map((url) => (
                 <Button
-                  key={index}
+                  key={url}
                   className='justify-start gap-2 border-gray-100 bg-gray-50 px-4'
                   leftIcon={<FileIcon className='size-4 text-gray-400' />}
                   round='rounded'

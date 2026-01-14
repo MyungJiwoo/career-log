@@ -46,15 +46,32 @@ export interface User {
   isLoggedIn?: boolean;
 }
 
+// 로그인 요청 타입
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+// 지원 정보 생성/수정 요청 타입
+export interface JobPayload {
+  companyName: string;
+  position: string;
+  appliedDate: string;
+  stages: Omit<Stage, '_id'>[];
+  contents: string;
+  progress: 'pending' | 'in progress' | 'completed';
+  fileUrl: string[];
+}
+
 /**
  * 사용자 로그아웃을 처리합니다.
  */
 export const logout = (): Promise<{ message: string }> => axiosInstance.post('/auth/logout').then((res) => res.data);
 /**
  * 사용자 로그인을 처리합니다.
- * @param {object} formData - 사용자 로그인 정보 (예: 이메일, 비밀번호)
+ * @param {LoginRequest} formData - 사용자 로그인 정보 (username, password)
  */
-export const login = (formData: any): Promise<{ user: User }> =>
+export const login = (formData: LoginRequest): Promise<{ user: User }> =>
   axiosInstance.post('/auth/login', formData).then((res) => res.data);
 
 /**
@@ -85,18 +102,18 @@ export const fetchStatistics = (): Promise<Statistics> =>
 
 /**
  * 새로운 지원 정보를 생성합니다.
- * @param {object} payload - 생성할 지원 정보 데이터
+ * @param {JobPayload} payload - 생성할 지원 정보 데이터
  */
-export const createJob = (payload: any): Promise<AppliedJob> =>
+export const createJob = (payload: JobPayload): Promise<AppliedJob> =>
   axiosInstance.post('/appliedJob', payload).then((res) => res.data);
 
 /**
  * 기존 지원 정보를 업데이트합니다.
  * @param {object} params - 업데이트할 지원 정보 파라미터
  * @param {string} params.id - 업데이트할 지원 ID
- * @param {object} params.payload - 업데이트할 지원 정보 데이터
+ * @param {Partial<JobPayload>} params.payload - 업데이트할 지원 정보 데이터
  */
-export const updateJob = ({ id, payload }: { id: string; payload: any }): Promise<AppliedJob> =>
+export const updateJob = ({ id, payload }: { id: string; payload: Partial<JobPayload> }): Promise<AppliedJob> =>
   axiosInstance.patch(`/appliedJob/${id}`, payload).then((res) => res.data);
 
 /**
@@ -111,7 +128,7 @@ export const deleteJob = (id: string): Promise<{ message: string }> =>
  * @param {object} params - 업데이트할 단계 상태 파라미터
  * @param {string} params.jobId - 지원 ID
  * @param {string} params.stageId - 단계 ID
- * @param {string} params.status - 업데이트할 상태
+ * @param {Stage['status']} params.status - 업데이트할 상태
  */
 export const updateStageStatus = ({
   jobId,
@@ -120,7 +137,7 @@ export const updateStageStatus = ({
 }: {
   jobId: string;
   stageId: string;
-  status: string;
+  status: Stage['status'];
 }): Promise<AppliedJob> =>
   axiosInstance.patch(`/appliedJob/${jobId}/stages/${stageId}`, { status }).then((res) => res.data);
 
