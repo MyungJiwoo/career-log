@@ -37,10 +37,12 @@ export default function StageTag({ name, status = 'pending', size = 'md', jobId,
   // todo: 낙관적 업데이트 적용
   const { mutate } = useMutation({
     mutationFn: updateStageStatus,
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const jobId = variables.jobId;
       // 'appliedJobs' 목록과 'statistics' 통계를 모두 다시 불러옴
       queryClient.invalidateQueries({ queryKey: ['appliedJobs'] });
       queryClient.invalidateQueries({ queryKey: ['statistics'] });
+      queryClient.invalidateQueries({ queryKey: ['appliedJob', jobId] }); // 태그의 해당 id 상세 페이지만 캐싱 무효화
       setOpen(false); // 팝업 닫기
     },
   });
