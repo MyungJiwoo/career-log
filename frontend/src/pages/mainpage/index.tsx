@@ -4,6 +4,14 @@ import { useNavigate } from 'react-router-dom';
 
 import { fetchAppliedJobs, fetchStatistics } from '@/apis/http';
 import Button from '@/components/Button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 import ApplicationStatusWidget from './components/ApplicationStatusWidget';
@@ -176,6 +184,39 @@ const MainPage = () => {
           ))}
         </tbody>
       </table>
+
+      {/* 페이지네이션 */}
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious className='bg-white-200 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#' />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink
+              className='bg-black-800 text-white-200 hover:bg-white-300 h-7 w-7 rounded-full p-0'
+              href='#'
+            >
+              1
+            </PaginationLink>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink className='bg-white-100 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#'>
+              2
+            </PaginationLink>
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationLink className='bg-white-100 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#'>
+              3
+            </PaginationLink>
+          </PaginationItem>
+          {/* <PaginationItem>
+            <PaginationEllipsis className='bg-green-200' />
+          </PaginationItem> */}
+          <PaginationItem>
+            <PaginationNext className='bg-white-200 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#' />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 };
