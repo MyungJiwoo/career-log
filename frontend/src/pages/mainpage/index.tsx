@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { fetchAppliedJobs, fetchStatistics, type PaginatedResponse } from '@/apis/http';
 import Button from '@/components/Button';
-import { Field, FieldGroup, FieldSet } from '@/components/ui/field';
+import { Field, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import {
   Pagination,
@@ -14,6 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -58,6 +59,7 @@ const MainPage = () => {
   const [progress, setProgress] = useState<'in progress' | 'pending' | 'completed' | 'all'>('all');
   const [page, setPage] = useState<number>(1);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [sort, setSort] = useState('latest');
 
   // 검색어 debounce 처리 (0.3초)
   const debouncedSearch = useDebounce(searchKeyword, 300);
@@ -141,36 +143,48 @@ const MainPage = () => {
             }}
           >
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='all'
             >
               전체
             </ToggleGroupItem>
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='pending'
             >
               진행 예정
             </ToggleGroupItem>
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='in progress'
             >
               진행 중
             </ToggleGroupItem>
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='completed'
             >
               진행 종료
             </ToggleGroupItem>
           </ToggleGroup>
 
-          <FieldSet className='w-52'>
-            <FieldGroup>
-              <Field>
+          <FieldSet className='flex'>
+            <div className='flex gap-2'>
+              <Field className='w-28'>
+                <Select value={sort} onValueChange={setSort}>
+                  <SelectTrigger className='bg-white-100 text-black-800 cursor-pointer rounded-xl border-none font-medium shadow-none'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='latest'>최신순</SelectItem>
+                    <SelectItem value='earliest'>오래된순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field className='w-52'>
                 <Input
-                  className='bg-white-100 rounded-xl border-none px-3 py-1 shadow-none'
+                  className='bg-white-100 rounded-xl border-none px-3 py-1 font-medium shadow-none'
                   id='companyName'
                   placeholder='회사명 검색'
                   type='text'
@@ -178,7 +192,7 @@ const MainPage = () => {
                   onChange={(event) => setSearchKeyword(event.target.value)}
                 />
               </Field>
-            </FieldGroup>
+            </div>
           </FieldSet>
         </div>
 
