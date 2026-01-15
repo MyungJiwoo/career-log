@@ -82,7 +82,7 @@ router.post("/", authenticateToken, async (req, res) => {
  */
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    const { progress = "all", page = "1", limit = "20", search = "" } = req.query;
+    const { progress = "all", page = "1", limit = "20", search = "", sortOrder = "latest" } = req.query;
 
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
@@ -107,8 +107,11 @@ router.get("/", authenticateToken, async (req, res) => {
 
     const filter = baseFilter;
 
+    // 정렬 방향 결정
+    const sortDirection = sortOrder === "earliest" ? 1 : -1;
+
     const [jobs, totalCount] = await Promise.all([
-      AppliedJob.find(filter).sort({ createdAt: -1 }).skip(skip).limit(validLimit),
+      AppliedJob.find(filter).sort({ createdAt: sortDirection }).skip(skip).limit(validLimit),
       AppliedJob.countDocuments(filter),
     ]);
 
