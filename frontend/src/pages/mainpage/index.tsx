@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { fetchAppliedJobs, fetchStatistics, type PaginatedResponse } from '@/apis/http';
@@ -15,6 +15,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useDebounce } from '@/hooks/useDebounce';
 
 import ApplicationStatusWidget from './components/ApplicationStatusWidget';
 import ApplicationTableRow from './components/ApplicationTableRow';
@@ -58,10 +59,18 @@ const MainPage = () => {
   const [page, setPage] = useState<number>(1);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
 
+  // 검색어 debounce 처리 (0.3초)
+  const debouncedSearch = useDebounce(searchKeyword, 300);
+
+  // 검색어 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   // 지원 현황 목록 조회
   const { data: paginatedResponse } = useQuery<PaginatedResponse<AppliedJob>>({
-    queryKey: ['appliedJobs', progress, page],
-    queryFn: () => fetchAppliedJobs(progress, page, 20),
+    queryKey: ['appliedJobs', progress, page, debouncedSearch],
+    queryFn: () => fetchAppliedJobs(progress, page, 20, debouncedSearch),
   });
 
   const jobs = paginatedResponse?.data;
