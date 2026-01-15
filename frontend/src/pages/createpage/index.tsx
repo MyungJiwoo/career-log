@@ -155,25 +155,23 @@ const CreatePage = () => {
     });
   };
 
+  const saveJobMutation = async (payload: JobPayload, files: File[], fileList: string[], id?: string) => {
+    // 1. 파일 업로드
+    const uploadedFiles = await Promise.all(files.map(uploadFile));
+
+    // 2. 최종 payload 생성
+    const finalPayload: JobPayload = {
+      ...payload,
+      fileUrl: [...fileList, ...uploadedFiles],
+    };
+
+    // 3. 생성 또는 수정
+    return id ? updateJob({ id, payload: finalPayload }) : createJob(finalPayload);
+  };
+
   // 지원 정보 생성/수정 mutation
   const saveMutation = useMutation({
-    mutationFn: async (payload: JobPayload) => {
-      // 1. 파일 업로드
-      const uploadedFiles = await Promise.all(files.map(uploadFile));
-
-      // 2. 업로드된 파일 URL을 포함한 최종 payload
-      const finalPayload: JobPayload = {
-        ...payload,
-        fileUrl: [...fileList, ...uploadedFiles],
-      };
-
-      // 3. 생성 또는 수정
-      if (id) {
-        return updateJob({ id, payload: finalPayload });
-      } else {
-        return createJob(finalPayload);
-      }
-    },
+    mutationFn: (payload: JobPayload) => saveJobMutation(payload, files, fileList, id),
     onSuccess: () => {
       // 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['appliedJobs'] });
