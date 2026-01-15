@@ -94,14 +94,16 @@ export const fetchVerifyToken = (): Promise<{ isValid: boolean; user?: User; mes
  * @param {number} page - 현재 페이지 번호 (기본값: 1)
  * @param {number} limit - 페이지당 항목 수 (기본값: 20)
  * @param {string} search - 회사명 검색어 (선택 사항)
+ * @param {string} sortOrder - 정렬 순서 ('latest' | 'earliest', 기본값: 'latest')
  */
 export const fetchAppliedJobs = (
   progress: string,
   page: number = 1,
   limit: number = 20,
-  search?: string
+  search?: string,
+  sortOrder: string = 'latest'
 ): Promise<PaginatedResponse<AppliedJob>> =>
-  axiosInstance.get('/appliedJob', { params: { progress, page, limit, search } }).then((res) => res.data);
+  axiosInstance.get('/appliedJob', { params: { progress, page, limit, search, sortOrder } }).then((res) => res.data);
 
 /**
  * 특정 지원 상세 정보를 가져옵니다.

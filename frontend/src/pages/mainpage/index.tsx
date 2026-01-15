@@ -69,10 +69,15 @@ const MainPage = () => {
     setPage(1);
   }, [debouncedSearch]);
 
+  // 정렬 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [sort]);
+
   // 지원 현황 목록 조회
   const { data: paginatedResponse } = useQuery<PaginatedResponse<AppliedJob>>({
-    queryKey: ['appliedJobs', progress, page, debouncedSearch],
-    queryFn: () => fetchAppliedJobs(progress, page, 20, debouncedSearch),
+    queryKey: ['appliedJobs', progress, page, debouncedSearch, sort],
+    queryFn: () => fetchAppliedJobs(progress, page, 20, debouncedSearch, sort),
   });
 
   const jobs = paginatedResponse?.data;
