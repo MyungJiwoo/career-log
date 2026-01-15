@@ -82,18 +82,32 @@ router.post("/", authenticateToken, async (req, res) => {
  */
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    const { progress } = req.query ?? "all";
+    const { progress = "all", page = "1", limit = "20" } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    const validPage = pageNum > 0 ? pageNum : 1;
+    const validLimit = limitNum > 0 && limitNum <= 100 ? limitNum : 20;
+
+    const skip = (validPage - 1) * validLimit;
 
     const baseFilter = { author: req.user.userId };
+    const filter = progress === "all" ? baseFilter : { ...baseFilter, progress };
 
-    if (progress === "all") {
-      const allJobs = await AppliedJob.find(baseFilter).sort({ createdAt: -1 });
-      return res.json(allJobs);
-    }
-    const jobs = await AppliedJob.find({ ...baseFilter, progress }).sort({
-      createdAt: -1,
+    const [jobs, totalCount] = await Promise.all([
+      AppliedJob.find(filter).sort({ createdAt: -1 }).skip(skip).limit(validLimit),
+      AppliedJob.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / validLimit);
+
+    return res.json({
+      data: jobs,
+      totalCount,
+      totalPages,
+      currentPage: validPage,
     });
-    return res.json(jobs);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
