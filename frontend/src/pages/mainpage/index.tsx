@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { fetchAppliedJobs, fetchStatistics } from '@/apis/http';
+import { fetchAppliedJobs, fetchStatistics, type PaginatedResponse } from '@/apis/http';
 import Button from '@/components/Button';
 import {
   Pagination,
@@ -53,12 +53,17 @@ interface Statistics {
 const MainPage = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState<'in progress' | 'pending' | 'completed' | 'all'>('all');
+  const [page, setPage] = useState<number>(1);
 
   // 지원 현황 목록 조회
-  const { data: jobs } = useQuery<AppliedJob[]>({
-    queryKey: ['appliedJobs', progress],
-    queryFn: () => fetchAppliedJobs(progress),
+  const { data: paginatedResponse } = useQuery<PaginatedResponse<AppliedJob>>({
+    queryKey: ['appliedJobs', progress, page],
+    queryFn: () => fetchAppliedJobs(progress, page, 20),
   });
+
+  const jobs = paginatedResponse?.data;
+  const totalPages = paginatedResponse?.totalPages ?? 0;
+  const currentPage = paginatedResponse?.currentPage ?? 1;
 
   // 통계 데이터 조회
   const { data: statistics } = useQuery<Statistics>({
@@ -68,6 +73,11 @@ const MainPage = () => {
 
   const navigateToCreate = () => {
     navigate('/new');
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -112,8 +122,10 @@ const MainPage = () => {
             type='single'
             value={progress}
             onValueChange={(value) => {
-              if (value === 'all' || value === 'in progress' || value === 'pending' || value === 'completed')
+              if (value === 'all' || value === 'in progress' || value === 'pending' || value === 'completed') {
                 setProgress(value);
+                setPage(1);
+              }
             }}
           >
             <ToggleGroupItem
@@ -186,37 +198,53 @@ const MainPage = () => {
       </table>
 
       {/* 페이지네이션 */}
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious className='bg-white-200 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#' />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink
-              className='bg-black-800 text-white-200 hover:bg-white-300 h-7 w-7 rounded-full p-0'
-              href='#'
-            >
-              1
-            </PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink className='bg-white-100 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#'>
-              2
-            </PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink className='bg-white-100 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#'>
-              3
-            </PaginationLink>
-          </PaginationItem>
-          {/* <PaginationItem>
-            <PaginationEllipsis className='bg-green-200' />
-          </PaginationItem> */}
-          <PaginationItem>
-            <PaginationNext className='bg-white-200 hover:bg-white-300 h-7 w-7 rounded-full p-0' href='#' />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      {totalPages > 0 && (
+        <Pagination>
+          <PaginationContent>
+            {/* Previous 버튼 */}
+            <PaginationItem>
+              <PaginationPrevious
+                aria-disabled={currentPage === 1}
+                className='bg-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                style={{
+                  pointerEvents: currentPage === 1 ? 'none' : 'auto',
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                }}
+                onClick={() => handlePageChange(currentPage - 1)}
+              />
+            </PaginationItem>
+
+            {/* 페이지 번호 */}
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+              <PaginationItem key={pageNumber}>
+                <PaginationLink
+                  className={
+                    pageNumber === currentPage
+                      ? 'bg-black-800 text-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                      : 'bg-white-100 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                  }
+                  onClick={() => handlePageChange(pageNumber)}
+                >
+                  {pageNumber}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            {/* Next 버튼 */}
+            <PaginationItem>
+              <PaginationNext
+                aria-disabled={currentPage === totalPages}
+                className='bg-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                style={{
+                  pointerEvents: currentPage === totalPages ? 'none' : 'auto',
+                  opacity: currentPage === totalPages ? 0.2 : 1,
+                }}
+                onClick={() => handlePageChange(currentPage + 1)}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };

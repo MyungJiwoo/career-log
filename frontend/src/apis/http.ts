@@ -24,6 +24,14 @@ export interface AppliedJob {
   updatedAt: string;
 }
 
+// 페이지네이션 응답 타입
+export interface PaginatedResponse<T> {
+  data: T[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+}
+
 // 통계(Statistics) 타입
 export interface Statistics {
   totalApplications: number;
@@ -81,11 +89,17 @@ export const fetchVerifyToken = (): Promise<{ isValid: boolean; user?: User; mes
   axiosInstance.post('/auth/verify-token').then((res) => res.data);
 
 /**
- * 지원한 회사 목록을 가져옵니다.
- * @param {string} progress - 필터링할 진행 상태 (예: 'pending', 'interview', 'offer', 'declined')
+ * 지원한 회사 목록을 페이지네이션과 함께 가져옵니다.
+ * @param {string} progress - 필터링할 진행 상태 ('all' | 'pending' | 'in progress' | 'completed')
+ * @param {number} page - 현재 페이지 번호 (기본값: 1)
+ * @param {number} limit - 페이지당 항목 수 (기본값: 20)
  */
-export const fetchAppliedJobs = (progress: string): Promise<AppliedJob[]> =>
-  axiosInstance.get('/appliedJob', { params: { progress } }).then((res) => res.data);
+export const fetchAppliedJobs = (
+  progress: string,
+  page: number = 1,
+  limit: number = 20
+): Promise<PaginatedResponse<AppliedJob>> =>
+  axiosInstance.get('/appliedJob', { params: { progress, page, limit } }).then((res) => res.data);
 
 /**
  * 특정 지원 상세 정보를 가져옵니다.
