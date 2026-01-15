@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { fetchAppliedJobs, fetchStatistics, type PaginatedResponse } from '@/apis/http';
 import Button from '@/components/Button';
+import { Field, FieldGroup, FieldSet } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import {
   Pagination,
   PaginationContent,
@@ -54,6 +56,7 @@ const MainPage = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState<'in progress' | 'pending' | 'completed' | 'all'>('all');
   const [page, setPage] = useState<number>(1);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
 
   // 지원 현황 목록 조회
   const { data: paginatedResponse } = useQuery<PaginatedResponse<AppliedJob>>({
@@ -153,7 +156,23 @@ const MainPage = () => {
               진행 종료
             </ToggleGroupItem>
           </ToggleGroup>
+
+          <FieldSet className='w-52'>
+            <FieldGroup>
+              <Field>
+                <Input
+                  className='bg-white-100 rounded-xl border-none px-3 py-1 shadow-none'
+                  id='companyName'
+                  placeholder='회사명 검색'
+                  type='text'
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                />
+              </Field>
+            </FieldGroup>
+          </FieldSet>
         </div>
+
         <Button className='px-3' size='sm' onClick={navigateToCreate}>
           추가하기
         </Button>
