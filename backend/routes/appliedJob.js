@@ -82,7 +82,7 @@ router.post("/", authenticateToken, async (req, res) => {
  */
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    const { progress = "all", page = "1", limit = "20" } = req.query;
+    const { progress = "all", page = "1", limit = "20", search = "" } = req.query;
 
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
@@ -91,9 +91,21 @@ router.get("/", authenticateToken, async (req, res) => {
     const validLimit = limitNum > 0 && limitNum <= 100 ? limitNum : 20;
 
     const skip = (validPage - 1) * validLimit;
+    const searchTerm = typeof search === 'string' ? search.trim() : '';
 
     const baseFilter = { author: req.user.userId };
-    const filter = progress === "all" ? baseFilter : { ...baseFilter, progress };
+
+    // progress 필터 추가
+    if (progress !== "all") {
+      baseFilter.progress = progress;
+    }
+
+    // 검색어 필터 추가
+    if (searchTerm) {
+      baseFilter.companyName = { $regex: searchTerm, $options: 'i' };
+    }
+
+    const filter = baseFilter;
 
     const [jobs, totalCount] = await Promise.all([
       AppliedJob.find(filter).sort({ createdAt: -1 }).skip(skip).limit(validLimit),
