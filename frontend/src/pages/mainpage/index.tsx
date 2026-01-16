@@ -1,15 +1,30 @@
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import ApplicationStatusWidget from "./components/ApplicationStatusWidget";
-import ApplicationTableRow from "./components/ApplicationTableRow";
-import Button from "@/components/Button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import axiosInstance from "@/apis/axiosInstance";
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { fetchAppliedJobs, fetchStatistics, type PaginatedResponse } from '@/apis/http';
+import Button from '@/components/Button';
+import { Field, FieldSet } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useDebounce } from '@/hooks/useDebounce';
+
+import ApplicationStatusWidget from './components/ApplicationStatusWidget';
+import ApplicationTableRow from './components/ApplicationTableRow';
 
 interface Stage {
   order: number;
   name: string;
-  status: "pending" | "pass" | "nonpass";
+  status: 'pending' | 'pass' | 'nonpass';
   _id: string;
 }
 
@@ -20,7 +35,7 @@ interface AppliedJob {
   appliedDate: string;
   stages: Stage[];
   contents: string;
-  progress: "pending" | "in progress" | "completed";
+  progress: 'pending' | 'in progress' | 'completed';
   createdAt: string;
   updatedAt: string;
   _id: string;
@@ -41,170 +56,186 @@ interface Statistics {
 
 const MainPage = () => {
   const navigate = useNavigate();
+  const [progress, setProgress] = useState<'in progress' | 'pending' | 'completed' | 'all'>('all');
+  const [page, setPage] = useState<number>(1);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [sort, setSort] = useState('latest');
+
+  // 검색어 debounce 처리 (0.3초)
+  const debouncedSearch = useDebounce(searchKeyword, 300);
+
+  // 검색어 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  // 정렬 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [sort]);
+
+  // 지원 현황 목록 조회
+  const { data: paginatedResponse } = useQuery<PaginatedResponse<AppliedJob>>({
+    queryKey: ['appliedJobs', progress, page, debouncedSearch, sort],
+    queryFn: () => fetchAppliedJobs(progress, page, 20, debouncedSearch, sort),
+  });
+
+  const jobs = paginatedResponse?.data;
+  const totalPages = paginatedResponse?.totalPages ?? 0;
+  const currentPage = paginatedResponse?.currentPage ?? 1;
+
+  // 통계 데이터 조회
+  const { data: statistics } = useQuery<Statistics>({
+    queryKey: ['statistics'],
+    queryFn: fetchStatistics,
+  });
+
   const navigateToCreate = () => {
-    navigate("/new");
+    navigate('/new');
   };
 
-  const [jobs, setJobs] = useState<AppliedJob[] | undefined>();
-  const [statistics, setStatistics] = useState<Statistics | undefined>();
-  const [progress, setProgress] = useState<
-    "in progress" | "pending" | "completed" | "all"
-  >("all");
-
-  const fetchAppliedJobs = async () => {
-    try {
-      const response = await axiosInstance.get("/appliedJob", {
-        params: {
-          progress,
-        },
-      });
-      setJobs(response.data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("불러오기 실패:", error.response?.data || error.message);
-      alert("불러오기 중 오류가 발생했습니다.");
-    }
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  const fetchAppliedStatistics = async () => {
-    try {
-      const response = await axiosInstance.get("/appliedJob/statistics");
-      setStatistics(response.data);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error(
-        "통계 불러오기 실패:",
-        error.response?.data || error.message
-      );
-      alert("통계 불러오기 중 오류가 발생했습니다.");
-    }
-  };
-
-  useEffect(() => {
-    fetchAppliedJobs();
-  }, [progress]);
-
-  useEffect(() => {
-    fetchAppliedStatistics();
-  }, []);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-black-900">지원 현황 리포트</h1>
+    <div className='flex flex-col gap-6'>
+      <h1 className='text-black-900 text-2xl font-bold'>지원 현황 리포트</h1>
 
       {/* 지원 현황 통계 위젯 */}
-      <div className="flex justify-between">
+      <div className='flex justify-between'>
+        <ApplicationStatusWidget stats={`${statistics?.totalApplications ?? 0}개`} title='총 지원 횟수' />
+        <ApplicationStatusWidget stats={`${statistics?.totalPassRate.toFixed(1) ?? 0}%`} title='총 합격률' />
         <ApplicationStatusWidget
-          title="총 지원 횟수"
-          stats={`${statistics?.totalApplications ?? 0}개`}
-        />
-        <ApplicationStatusWidget
-          title="총 합격률"
-          stats={`${statistics?.totalPassRate ?? 0}%`}
-        />
-        <ApplicationStatusWidget
-          title="서류 합격률"
           stats={`${statistics?.documentPassRate.toFixed(1) ?? 0}%`}
+          title='서류 합격률'
           total={statistics?.totalDocumentApplications ?? 0}
-          totalUnit="지원"
+          totalUnit='지원'
         />
         <ApplicationStatusWidget
-          title="코딩 테스트 합격률"
           stats={`${statistics?.codingTestPassRate.toFixed(1) ?? 0}%`}
+          title='코딩 테스트 합격률'
           total={statistics?.totalCodingTestAttempts ?? 0}
-          totalUnit="진행"
+          totalUnit='진행'
         />
         <ApplicationStatusWidget
-          title="과제 테스트 합격률"
           stats={`${statistics?.assignmentPassRate.toFixed(1) ?? 0}%`}
+          title='과제 테스트 합격률'
           total={statistics?.totalAssignmentAttempts ?? 0}
-          totalUnit="진행"
+          totalUnit='진행'
         />
         <ApplicationStatusWidget
-          title="면접 합격률"
           stats={`${statistics?.interviewPassRate.toFixed(1) ?? 0}%`}
+          title='면접 합격률'
           total={statistics?.totalInterviewAttempts ?? 0}
-          totalUnit="진행"
+          totalUnit='진행'
         />
       </div>
 
       {/* 지원 현황 추가 버튼 */}
-      <div className="flex justify-between">
-        <div className="flex gap-2 justify-start">
+      <div className='flex justify-between'>
+        <div className='flex justify-start gap-2'>
           <ToggleGroup
-            type="single"
             spacing={2}
+            type='single'
             value={progress}
             onValueChange={(value) => {
-              if (
-                value === "all" ||
-                value === "in progress" ||
-                value === "pending" ||
-                value === "completed"
-              )
+              if (value === 'all' || value === 'in progress' || value === 'pending' || value === 'completed') {
                 setProgress(value);
+                setPage(1);
+              }
             }}
           >
             <ToggleGroupItem
-              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
-              value="all"
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              value='all'
             >
               전체
             </ToggleGroupItem>
             <ToggleGroupItem
-              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
-              value="pending"
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              value='pending'
             >
               진행 예정
             </ToggleGroupItem>
             <ToggleGroupItem
-              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
-              value="in progress"
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              value='in progress'
             >
               진행 중
             </ToggleGroupItem>
             <ToggleGroupItem
-              className="bg-white-300 text-black-800 rounded-xl data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer"
-              value="completed"
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              value='completed'
             >
               진행 종료
             </ToggleGroupItem>
           </ToggleGroup>
+
+          <FieldSet className='flex'>
+            <div className='flex gap-2'>
+              <Field className='w-28'>
+                <Select value={sort} onValueChange={setSort}>
+                  <SelectTrigger className='bg-white-100 text-black-800 cursor-pointer rounded-xl border-none font-medium shadow-none'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='latest'>최신순</SelectItem>
+                    <SelectItem value='earliest'>오래된순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field className='w-52'>
+                <Input
+                  className='bg-white-100 rounded-xl border-none px-3 py-1 font-medium shadow-none'
+                  id='companyName'
+                  placeholder='회사명 검색'
+                  type='text'
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                />
+              </Field>
+            </div>
+          </FieldSet>
         </div>
-        <Button onClick={navigateToCreate} size="sm" className="px-3">
+
+        <Button className='px-3' size='sm' onClick={navigateToCreate}>
           추가하기
         </Button>
       </div>
 
       {/* 지원 현황 표 */}
-      <table className="w-full table-fixed border-separate bg-white-100 rounded-2xl p-4 border-spacing-x-4 border-spacing-y-3">
-        <thead className="sticky top-0 z-10 text-black-600">
-          <tr className="text-left">
-            <th scope="col" className="w-[5%] text-sm font-semibold">
+      <table className='bg-white-100 w-full table-fixed border-separate border-spacing-x-4 border-spacing-y-3 rounded-2xl p-4'>
+        <thead className='text-black-600 sticky top-0 z-10'>
+          <tr className='text-left'>
+            <th className='w-[5%] text-sm font-semibold' scope='col'>
               번호
             </th>
-            <th scope="col" className="w-[20%] text-sm font-semibold">
+            <th className='w-[20%] text-sm font-semibold' scope='col'>
               기업명
             </th>
-            <th scope="col" className="w-[12%] text-sm font-semibold">
+            <th className='w-[12%] text-sm font-semibold' scope='col'>
               직무
             </th>
-            <th scope="col" className="w-[13%] text-sm font-semibold">
+            <th className='w-[13%] text-sm font-semibold' scope='col'>
               진행 현황
             </th>
-            <th scope="col" className="w-[50%] text-sm font-semibold">
+            <th className='w-[50%] text-sm font-semibold' scope='col'>
               채용 절차
             </th>
           </tr>
         </thead>
 
-        <tbody className="text-black-900">
+        <tbody className='text-black-900'>
           {jobs?.map((job, index) => (
             <ApplicationTableRow
-              index={index + 1}
-              id={job._id}
-              number={job.number}
+              key={job._id}
               companyName={job.companyName}
+              id={job._id}
+              index={index + 1}
+              number={job.number}
               position={job.position}
               progress={job.progress}
               stages={job.stages}
@@ -212,6 +243,55 @@ const MainPage = () => {
           ))}
         </tbody>
       </table>
+
+      {/* 페이지네이션 */}
+      {totalPages > 0 && (
+        <Pagination>
+          <PaginationContent>
+            {/* Previous 버튼 */}
+            <PaginationItem>
+              <PaginationPrevious
+                aria-disabled={currentPage === 1}
+                className='bg-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                style={{
+                  pointerEvents: currentPage === 1 ? 'none' : 'auto',
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                }}
+                onClick={() => handlePageChange(currentPage - 1)}
+              />
+            </PaginationItem>
+
+            {/* 페이지 번호 */}
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+              <PaginationItem key={pageNumber}>
+                <PaginationLink
+                  className={
+                    pageNumber === currentPage
+                      ? 'bg-black-800 text-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                      : 'bg-white-100 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                  }
+                  onClick={() => handlePageChange(pageNumber)}
+                >
+                  {pageNumber}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            {/* Next 버튼 */}
+            <PaginationItem>
+              <PaginationNext
+                aria-disabled={currentPage === totalPages}
+                className='bg-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                style={{
+                  pointerEvents: currentPage === totalPages ? 'none' : 'auto',
+                  opacity: currentPage === totalPages ? 0.2 : 1,
+                }}
+                onClick={() => handlePageChange(currentPage + 1)}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };

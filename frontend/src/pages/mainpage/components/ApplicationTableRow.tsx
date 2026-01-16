@@ -1,5 +1,6 @@
-import StageTag from "@/components/StageTag";
 import { useNavigate } from "react-router-dom";
+
+import StageTag from "@/components/StageTag";
 
 const PROGRESS_LABEL_MAP = {
   pending: "예정",
@@ -49,8 +50,8 @@ export default function ApplicationTableRow({
     <tr>
       <td>{index}</td>
       <td
-        onClick={() => navigateToDetail(id)}
         className="underline cursor-pointer underline-offset-4"
+        onClick={() => navigateToDetail(id)}
       >
         {companyName}
       </td>
@@ -60,11 +61,11 @@ export default function ApplicationTableRow({
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin scrollbar-track-transparent">
           {stages.map((stage) => (
             <StageTag
+              jobId={id}
               name={stage.name}
               size="sm"
-              status={stage.status}
               stageId={stage._id}
-              jobId={id}
+              status={stage.status}
             />
           ))}
         </div>

@@ -82,18 +82,47 @@ router.post("/", authenticateToken, async (req, res) => {
  */
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    const { progress } = req.query ?? "all";
+    const { progress = "all", page = "1", limit = "20", search = "", sortOrder = "latest" } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    const validPage = pageNum > 0 ? pageNum : 1;
+    const validLimit = limitNum > 0 && limitNum <= 100 ? limitNum : 20;
+
+    const skip = (validPage - 1) * validLimit;
+    const searchTerm = typeof search === 'string' ? search.trim() : '';
 
     const baseFilter = { author: req.user.userId };
 
-    if (progress === "all") {
-      const allJobs = await AppliedJob.find(baseFilter).sort({ createdAt: -1 });
-      return res.json(allJobs);
+    // progress 필터 추가
+    if (progress !== "all") {
+      baseFilter.progress = progress;
     }
-    const jobs = await AppliedJob.find({ ...baseFilter, progress }).sort({
-      createdAt: -1,
+
+    // 검색어 필터 추가
+    if (searchTerm) {
+      baseFilter.companyName = { $regex: searchTerm, $options: 'i' };
+    }
+
+    const filter = baseFilter;
+
+    // 정렬 방향 결정
+    const sortDirection = sortOrder === "earliest" ? 1 : -1;
+
+    const [jobs, totalCount] = await Promise.all([
+      AppliedJob.find(filter).sort({ createdAt: sortDirection }).skip(skip).limit(validLimit),
+      AppliedJob.countDocuments(filter),
+    ]);
+
+    const totalPages = Math.ceil(totalCount / validLimit);
+
+    return res.json({
+      data: jobs,
+      totalCount,
+      totalPages,
+      currentPage: validPage,
     });
-    return res.json(jobs);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
