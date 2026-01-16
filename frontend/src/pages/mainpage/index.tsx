@@ -1,10 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { fetchAppliedJobs, fetchStatistics } from '@/apis/http';
+import { fetchAppliedJobs, fetchStatistics, type PaginatedResponse } from '@/apis/http';
 import Button from '@/components/Button';
+import { Field, FieldSet } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { useDebounce } from '@/hooks/useDebounce';
 
 import ApplicationStatusWidget from './components/ApplicationStatusWidget';
 import ApplicationTableRow from './components/ApplicationTableRow';
@@ -45,12 +57,32 @@ interface Statistics {
 const MainPage = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState<'in progress' | 'pending' | 'completed' | 'all'>('all');
+  const [page, setPage] = useState<number>(1);
+  const [searchKeyword, setSearchKeyword] = useState<string>('');
+  const [sort, setSort] = useState('latest');
+
+  // 검색어 debounce 처리 (0.3초)
+  const debouncedSearch = useDebounce(searchKeyword, 300);
+
+  // 검색어 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  // 정렬 변경 시 페이지를 1로 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [sort]);
 
   // 지원 현황 목록 조회
-  const { data: jobs } = useQuery<AppliedJob[]>({
-    queryKey: ['appliedJobs', progress],
-    queryFn: () => fetchAppliedJobs(progress),
+  const { data: paginatedResponse } = useQuery<PaginatedResponse<AppliedJob>>({
+    queryKey: ['appliedJobs', progress, page, debouncedSearch, sort],
+    queryFn: () => fetchAppliedJobs(progress, page, 20, debouncedSearch, sort),
   });
+
+  const jobs = paginatedResponse?.data;
+  const totalPages = paginatedResponse?.totalPages ?? 0;
+  const currentPage = paginatedResponse?.currentPage ?? 1;
 
   // 통계 데이터 조회
   const { data: statistics } = useQuery<Statistics>({
@@ -60,6 +92,11 @@ const MainPage = () => {
 
   const navigateToCreate = () => {
     navigate('/new');
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -104,36 +141,66 @@ const MainPage = () => {
             type='single'
             value={progress}
             onValueChange={(value) => {
-              if (value === 'all' || value === 'in progress' || value === 'pending' || value === 'completed')
+              if (value === 'all' || value === 'in progress' || value === 'pending' || value === 'completed') {
                 setProgress(value);
+                setPage(1);
+              }
             }}
           >
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='all'
             >
               전체
             </ToggleGroupItem>
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='pending'
             >
               진행 예정
             </ToggleGroupItem>
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='in progress'
             >
               진행 중
             </ToggleGroupItem>
             <ToggleGroupItem
-              className='bg-white-300 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
+              className='bg-white-300 hover:bg-white-100 text-black-800 data-[state=on]:bg-black-800 data-[state=on]:text-white-200 cursor-pointer rounded-xl'
               value='completed'
             >
               진행 종료
             </ToggleGroupItem>
           </ToggleGroup>
+
+          <FieldSet className='flex'>
+            <div className='flex gap-2'>
+              <Field className='w-28'>
+                <Select value={sort} onValueChange={setSort}>
+                  <SelectTrigger className='bg-white-100 text-black-800 cursor-pointer rounded-xl border-none font-medium shadow-none'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='latest'>최신순</SelectItem>
+                    <SelectItem value='earliest'>오래된순</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              <Field className='w-52'>
+                <Input
+                  className='bg-white-100 rounded-xl border-none px-3 py-1 font-medium shadow-none'
+                  id='companyName'
+                  placeholder='회사명 검색'
+                  type='text'
+                  value={searchKeyword}
+                  onChange={(event) => setSearchKeyword(event.target.value)}
+                />
+              </Field>
+            </div>
+          </FieldSet>
         </div>
+
         <Button className='px-3' size='sm' onClick={navigateToCreate}>
           추가하기
         </Button>
@@ -176,6 +243,55 @@ const MainPage = () => {
           ))}
         </tbody>
       </table>
+
+      {/* 페이지네이션 */}
+      {totalPages > 0 && (
+        <Pagination>
+          <PaginationContent>
+            {/* Previous 버튼 */}
+            <PaginationItem>
+              <PaginationPrevious
+                aria-disabled={currentPage === 1}
+                className='bg-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                style={{
+                  pointerEvents: currentPage === 1 ? 'none' : 'auto',
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                }}
+                onClick={() => handlePageChange(currentPage - 1)}
+              />
+            </PaginationItem>
+
+            {/* 페이지 번호 */}
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((pageNumber) => (
+              <PaginationItem key={pageNumber}>
+                <PaginationLink
+                  className={
+                    pageNumber === currentPage
+                      ? 'bg-black-800 text-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                      : 'bg-white-100 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                  }
+                  onClick={() => handlePageChange(pageNumber)}
+                >
+                  {pageNumber}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            {/* Next 버튼 */}
+            <PaginationItem>
+              <PaginationNext
+                aria-disabled={currentPage === totalPages}
+                className='bg-white-200 hover:bg-white-300 h-7 w-7 cursor-pointer rounded-full p-0'
+                style={{
+                  pointerEvents: currentPage === totalPages ? 'none' : 'auto',
+                  opacity: currentPage === totalPages ? 0.2 : 1,
+                }}
+                onClick={() => handlePageChange(currentPage + 1)}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 };
