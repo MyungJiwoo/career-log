@@ -103,8 +103,11 @@ const CreatePage = () => {
       setStages(jobData.stages);
       setProgressStatus(jobData.progress);
       setFileList(jobData.fileUrl);
-      const parsedBlocks = JSON.parse(jobData.contents);
-      editor.replaceBlocks(editor.document, parsedBlocks);
+
+      if (jobData.contents) {
+        const parsedBlocks = JSON.parse(jobData.contents);
+        editor.replaceBlocks(editor.document, parsedBlocks);
+      }
     }
   }, [jobData, editor]);
 
