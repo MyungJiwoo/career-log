@@ -270,7 +270,7 @@ const CreatePage = () => {
                     id='date'
                     variant='outline'
                   >
-                    {date ? date.toLocaleDateString() : 'Select date'}
+                    {date && date.toLocaleDateString()}
                     <ChevronDownIcon />
                   </ShadcnButton>
                 </PopoverTrigger>
@@ -279,8 +279,10 @@ const CreatePage = () => {
                     captionLayout='dropdown'
                     mode='single'
                     selected={date}
-                    onSelect={(date) => {
-                      setDate(date);
+                    onSelect={(newDate) => {
+                      if (newDate) {
+                        setDate(newDate);
+                      }
                       setOpen(false);
                     }}
                   />
