@@ -290,7 +290,7 @@ const CreatePage = () => {
 
             <Field>
               <FieldLabel htmlFor='progress'>진행 여부</FieldLabel>
-              <Select value={progressStatus} onValueChange={setProgressStatus}>
+              <Select key={id ? progressStatus : 'create'} value={progressStatus} onValueChange={setProgressStatus}>
                 <SelectTrigger className='border-white-200 cursor-pointer rounded-lg border px-2 py-1 font-normal shadow-none'>
                   <SelectValue />
                 </SelectTrigger>
