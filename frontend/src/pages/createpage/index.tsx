@@ -103,8 +103,11 @@ const CreatePage = () => {
       setStages(jobData.stages);
       setProgressStatus(jobData.progress);
       setFileList(jobData.fileUrl);
-      const parsedBlocks = JSON.parse(jobData.contents);
-      editor.replaceBlocks(editor.document, parsedBlocks);
+
+      if (jobData.contents) {
+        const parsedBlocks = JSON.parse(jobData.contents);
+        editor.replaceBlocks(editor.document, parsedBlocks);
+      }
     }
   }, [jobData, editor]);
 
@@ -270,7 +273,7 @@ const CreatePage = () => {
                     id='date'
                     variant='outline'
                   >
-                    {date ? date.toLocaleDateString() : 'Select date'}
+                    {date && date.toLocaleDateString()}
                     <ChevronDownIcon />
                   </ShadcnButton>
                 </PopoverTrigger>
@@ -279,8 +282,10 @@ const CreatePage = () => {
                     captionLayout='dropdown'
                     mode='single'
                     selected={date}
-                    onSelect={(date) => {
-                      setDate(date);
+                    onSelect={(newDate) => {
+                      if (newDate) {
+                        setDate(newDate);
+                      }
                       setOpen(false);
                     }}
                   />
@@ -290,7 +295,7 @@ const CreatePage = () => {
 
             <Field>
               <FieldLabel htmlFor='progress'>진행 여부</FieldLabel>
-              <Select value={progressStatus} onValueChange={setProgressStatus}>
+              <Select key={id ? progressStatus : 'create'} value={progressStatus} onValueChange={setProgressStatus}>
                 <SelectTrigger className='border-white-200 cursor-pointer rounded-lg border px-2 py-1 font-normal shadow-none'>
                   <SelectValue />
                 </SelectTrigger>
